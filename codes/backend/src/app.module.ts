@@ -8,15 +8,16 @@ import { FilesModule } from "./modules/files/files.module";
 import { DatabaseService } from "./database/database.service";
 import { ConfigModule } from "@nestjs/config";
 import { appConfig } from "./config/config";
+import { IpTrafficMiddleware } from "./middlewares/ip-traffic.middleware";
 
 @Module({
   imports: [
     SharedModule,
     FilesModule,
-    // ConfigModule.forRoot({
-    //   isGlobal: true, // Makes the config module available globally
-    //   load: [appConfig], // Load custom configuration files
-    // }),
+    ConfigModule.forRoot({
+      isGlobal: true, // Makes the config module available globally
+      load: [appConfig], // Load custom configuration files
+    }),
   ],
   controllers: [AppController],
   providers: [AppService, DatabaseService],
@@ -26,5 +27,6 @@ export class AppModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(HttpLoggerMiddleware).forRoutes("*");
     consumer.apply(RequestIdMiddleware).forRoutes("*");
+    consumer.apply(IpTrafficMiddleware).forRoutes("/api/v1/files/");
   }
 }

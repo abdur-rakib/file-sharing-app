@@ -17,7 +17,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   }
 
   private initializeTables() {
-    const createTableSQL = `
+    const createFilesTableSQL = `
       CREATE TABLE IF NOT EXISTS files (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         filename TEXT,
@@ -29,17 +29,19 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       );
     `;
 
-    const createPublicKeyIndex = `
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_files_public_key ON files(public_key);
-  `;
+    const createIpUsageTableSQL = `
+      CREATE TABLE IF NOT EXISTS ip_usage (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ip TEXT,
+        date TEXT,
+        uploadBytes INTEGER DEFAULT 0,
+        downloadBytes INTEGER DEFAULT 0,
+        UNIQUE(ip, date)
+      );
+    `;
 
-    const createPrivateKeyIndex = `
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_files_private_key ON files(private_key);
-  `;
-
-    this.db.prepare(createTableSQL).run();
-    this.db.prepare(createPublicKeyIndex).run();
-    this.db.prepare(createPrivateKeyIndex).run();
+    this.db.prepare(createFilesTableSQL).run();
+    this.db.prepare(createIpUsageTableSQL).run();
   }
 
   get connection() {
