@@ -6,7 +6,6 @@ import {
   HttpStatus,
 } from "@nestjs/common";
 import { Response } from "express";
-import { HttpExceptionMessage } from "src/common/constants/http-exception-message";
 import { statusType } from "src/common/constants/status-type";
 
 @Catch()
