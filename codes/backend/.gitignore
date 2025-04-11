@@ -16,6 +16,7 @@ lerna-debug.log*
 .DS_Store
 
 /uploads
+*/files.db
 
 # Tests
 /coverage

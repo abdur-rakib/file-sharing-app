@@ -21,7 +21,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     const errorResponse = {
       status: statusType.FAILED,
-      Code: status,
+      code: status,
       // message: HttpExceptionMessage[status],
       reason: exception.response?.message || exception.message,
       message: exception.response?.message || exception.message,

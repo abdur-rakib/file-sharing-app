@@ -20,4 +20,11 @@ export class FilesRepository {
       file.uploaded_at
     );
   }
+
+  findByPublicKey(publicKey: string) {
+    const queryStatement = this.dbService.connection.prepare(`
+      SELECT * FROM files WHERE public_key = ?
+    `);
+    return queryStatement.get(publicKey);
+  }
 }

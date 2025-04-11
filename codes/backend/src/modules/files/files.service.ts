@@ -26,4 +26,8 @@ export class FilesService {
     // return the public and private keys
     return { public_key, private_key };
   }
+
+  getFileByPublicKey(publicKey: string) {
+    return this.filesRepo.findByPublicKey(publicKey);
+  }
 }
