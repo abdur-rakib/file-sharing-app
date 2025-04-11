@@ -3,11 +3,12 @@ import { Request, Response, NextFunction } from "express";
 import { DatabaseService } from "../database/database.service";
 import { ConfigService } from "@nestjs/config";
 import { IAppConfig } from "src/config/config.interface";
+import { IpUsageRepository } from "src/modules/files/ip-usage.repository";
 
 @Injectable()
 export class IpTrafficMiddleware implements NestMiddleware {
   constructor(
-    private readonly dbService: DatabaseService,
+    private readonly ipUsageRepo: IpUsageRepository,
     private readonly configService: ConfigService
   ) {}
 
@@ -24,10 +25,8 @@ export class IpTrafficMiddleware implements NestMiddleware {
     const contentLength = parseInt(req.headers["content-length"] || "0", 10);
 
     const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
-    const usageStmt = this.dbService.connection.prepare(`
-      SELECT * FROM ip_usage WHERE ip = ? AND date = ?
-    `);
-    let usage = usageStmt.get(ip, today);
+
+    let usage = this.ipUsageRepo.getIpUsage(ip, today);
 
     const { maxDownloadBytesPerIp, maxUploadBytesPerIp } =
       this.configService.get<IAppConfig>("app");
@@ -35,11 +34,8 @@ export class IpTrafficMiddleware implements NestMiddleware {
     const maxLimit = isUpload ? maxUploadBytesPerIp : maxDownloadBytesPerIp;
 
     if (!usage) {
-      this.dbService.connection
-        .prepare(
-          `INSERT INTO ip_usage (ip, date, uploadBytes, downloadBytes) VALUES (?, ?, 0, 0)`
-        )
-        .run(ip, today);
+      // If no usage record exists for today, create one
+      this.ipUsageRepo.createIpUsage(ip, today);
       usage = { uploadBytes: 0, downloadBytes: 0 };
     }
 
@@ -48,12 +44,6 @@ export class IpTrafficMiddleware implements NestMiddleware {
     if (current + contentLength > maxLimit) {
       throw new ForbiddenException(`Daily ${limitKey} limit exceeded`);
     }
-
-    this.dbService.connection
-      .prepare(
-        `UPDATE ip_usage SET ${limitKey} = ${limitKey} + ? WHERE ip = ? AND date = ?`
-      )
-      .run(contentLength, ip, today);
 
     next();
   }

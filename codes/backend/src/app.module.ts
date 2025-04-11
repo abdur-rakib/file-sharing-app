@@ -9,6 +9,7 @@ import { DatabaseService } from "./database/database.service";
 import { ConfigModule } from "@nestjs/config";
 import { appConfig } from "./config/config";
 import { IpTrafficMiddleware } from "./middlewares/ip-traffic.middleware";
+import { IpUsageRepository } from "./modules/files/ip-usage.repository";
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { IpTrafficMiddleware } from "./middlewares/ip-traffic.middleware";
     }),
   ],
   controllers: [AppController],
-  providers: [AppService, DatabaseService],
+  providers: [AppService, DatabaseService, IpUsageRepository],
   exports: [DatabaseService],
 })
 export class AppModule {

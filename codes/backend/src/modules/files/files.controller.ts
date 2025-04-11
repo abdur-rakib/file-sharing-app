@@ -6,6 +6,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Req,
   Res,
   UploadedFile,
   UseInterceptors,
@@ -26,7 +27,7 @@ import * as path from "path";
 import { extname } from "path";
 import { IControllerResult } from "src/common/interfaces/controller-result.interface";
 import { FilesService } from "./files.service";
-import { Response } from "express";
+import { Request, Response } from "express";
 
 @Controller({ path: "files", version: "v1" })
 @ApiTags("Files")
@@ -62,12 +63,15 @@ export class FilesController {
       }),
     })
   )
-  upload(@UploadedFile() file: Express.Multer.File): IControllerResult {
+  upload(
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: Request
+  ): IControllerResult {
     if (!file) {
       throw new BadRequestException("File is required");
     }
 
-    const response = this.filesService.uploadFile(file);
+    const response = this.filesService.uploadFile(file, req.ip);
     return { message: "File uploaded successfully", data: response };
   }
 
