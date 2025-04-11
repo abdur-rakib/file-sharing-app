@@ -22,7 +22,7 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 
-@Controller("files")
+@Controller({ path: "files", version: "v1" })
 @ApiTags("Files")
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
