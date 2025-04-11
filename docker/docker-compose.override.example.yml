@@ -7,4 +7,4 @@ services:
     volumes:
       - ../codes/backend:/home/appuser/appsrc
     ports:
-      - ${HTTP_PUBLISH_PORT}:8080
+      - ${BACKEND_HTTP_PUBLISH_PORT}:3000
