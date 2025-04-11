@@ -27,4 +27,20 @@ export class FilesRepository {
     `);
     return queryStatement.get(publicKey);
   }
+
+  deleteByPrivateKey(privateKey: string) {
+    const getStmt = this.dbService.connection.prepare(`
+      SELECT * FROM files WHERE private_key = ?
+    `);
+    const file = getStmt.get(privateKey);
+
+    if (!file) return null;
+
+    const delStmt = this.dbService.connection.prepare(`
+      DELETE FROM files WHERE private_key = ?
+    `);
+    delStmt.run(privateKey);
+
+    return file;
+  }
 }

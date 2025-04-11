@@ -30,4 +30,8 @@ export class FilesService {
   getFileByPublicKey(publicKey: string) {
     return this.filesRepo.findByPublicKey(publicKey);
   }
+
+  deleteFileByPrivateKey(privateKey: string) {
+    return this.filesRepo.deleteByPrivateKey(privateKey);
+  }
 }

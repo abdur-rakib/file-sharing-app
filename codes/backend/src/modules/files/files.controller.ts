@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Controller,
+  Delete,
   Get,
   NotFoundException,
   Param,
@@ -21,6 +22,7 @@ import {
   ApiParam,
   ApiTags,
 } from "@nestjs/swagger";
+import { IControllerResult } from "src/common/interfaces/controller-result.interface";
 
 @Controller({ path: "files", version: "v1" })
 @ApiTags("Files")
@@ -56,12 +58,13 @@ export class FilesController {
       }),
     })
   )
-  async upload(@UploadedFile() file: Express.Multer.File) {
+  upload(@UploadedFile() file: Express.Multer.File): IControllerResult {
     if (!file) {
       throw new BadRequestException("File is required");
     }
 
-    return this.filesService.uploadFile(file);
+    const response = this.filesService.uploadFile(file);
+    return { message: "File uploaded successfully", data: response };
   }
 
   @Get(":public_key")
@@ -98,9 +101,28 @@ export class FilesController {
       },
     },
   })
-  async download(@Param("public_key") public_key: string) {
-    const file = await this.filesService.getFileByPublicKey(public_key);
+  download(@Param("public_key") public_key: string): IControllerResult {
+    const file = this.filesService.getFileByPublicKey(public_key);
     if (!file) throw new NotFoundException("File not found");
-    return file;
+    return { message: "File get successfully", data: file };
+  }
+
+  @Delete(":private_key")
+  @ApiNotFoundResponse({
+    description: "Custom 404 error when file is not found",
+    schema: {
+      type: "object",
+      properties: {
+        status: { type: "string", example: "failed" },
+        code: { type: "integer", example: 404 },
+        reason: { type: "string", example: "File not found" },
+        message: { type: "string", example: "File not found" },
+      },
+    },
+  })
+  remove(@Param("private_key") private_key: string): IControllerResult {
+    const deleted = this.filesService.deleteFileByPrivateKey(private_key);
+    if (!deleted) throw new NotFoundException("File not found");
+    return { message: "File deleted successfully" };
   }
 }
