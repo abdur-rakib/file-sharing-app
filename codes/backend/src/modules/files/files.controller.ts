@@ -6,13 +6,11 @@ import {
   NotFoundException,
   Param,
   Post,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { diskStorage } from "multer";
-import { extname } from "path";
-import { FilesService } from "./files.service";
 import {
   ApiBody,
   ApiConsumes,
@@ -22,7 +20,13 @@ import {
   ApiParam,
   ApiTags,
 } from "@nestjs/swagger";
+import * as fs from "fs";
+import { diskStorage } from "multer";
+import * as path from "path";
+import { extname } from "path";
 import { IControllerResult } from "src/common/interfaces/controller-result.interface";
+import { FilesService } from "./files.service";
+import { Response } from "express";
 
 @Controller({ path: "files", version: "v1" })
 @ApiTags("Files")
@@ -75,17 +79,13 @@ export class FilesController {
     type: String,
   })
   @ApiOkResponse({
-    description: "Returns file metadata or file content",
-    schema: {
-      type: "object",
-      properties: {
-        id: { type: "number" },
-        filename: { type: "string" },
-        path: { type: "string" },
-        mimetype: { type: "string" },
-        public_key: { type: "string" },
-        private_key: { type: "string" },
-        uploaded_at: { type: "string", format: "date-time" },
+    description: "The file will be returned as a downloadable stream",
+    content: {
+      "application/octet-stream": {
+        schema: {
+          type: "string",
+          format: "binary",
+        },
       },
     },
   })
@@ -101,10 +101,30 @@ export class FilesController {
       },
     },
   })
-  download(@Param("public_key") public_key: string): IControllerResult {
-    const file = this.filesService.getFileByPublicKey(public_key);
-    if (!file) throw new NotFoundException("File not found");
-    return { message: "File get successfully", data: file };
+  async download(
+    @Param("public_key") public_key: string,
+    @Res() res: Response
+  ) {
+    const file = await this.filesService.getFileByPublicKey(public_key);
+    if (!file) {
+      throw new NotFoundException("File not found");
+    }
+
+    // Check if the file exists on disk
+    const filePath = path.resolve(file.path);
+    if (!fs.existsSync(filePath)) {
+      throw new NotFoundException("File not found on disk");
+    }
+
+    // Set the headers for the response
+    res.set({
+      "Content-Type": file.mimetype,
+      "Content-Disposition": `attachment; filename="${file.filename}"`,
+    });
+
+    // Create a read stream and pipe it to the response
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
   }
 
   @Delete(":private_key")
