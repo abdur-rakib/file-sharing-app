@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from "@nestjs/common";
-import Database from "better-sqlite3";
+import * as Database from "better-sqlite3";
 import * as path from "path";
 
 @Injectable()
