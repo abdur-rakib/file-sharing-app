@@ -7,7 +7,7 @@ export enum DbConnectivity {
 }
 
 export enum File {
-  CREATE_FILE = "CREATE_FILE",
-  GET_FILE = "GET_FILE",
+  UPLOAD_FILE = "UPLOAD_FILE",
+  DOWNLOAD_FILE = "DOWNLOAD_FILE",
   DELETE_FILE = "DELETE_FILE",
 }

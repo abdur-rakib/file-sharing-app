@@ -29,14 +29,19 @@ import { IControllerResult } from "src/common/interfaces/controller-result.inter
 import { FilesService } from "./files.service";
 import { Request, Response } from "express";
 import { IpUsageRepository } from "./ip-usage.repository";
+import { CustomLogger } from "src/shared/services/custom-logger.service";
+import { File } from "src/common/enums/logging-tag.enum";
 
 @Controller({ path: "files", version: "v1" })
 @ApiTags("Files")
 export class FilesController {
   constructor(
     private readonly filesService: FilesService,
-    private readonly ipUsageRepo: IpUsageRepository
-  ) {}
+    private readonly ipUsageRepo: IpUsageRepository,
+    private readonly logger: CustomLogger
+  ) {
+    logger.setContext(FilesController.name);
+  }
 
   @Post()
   @ApiOperation({ summary: "Upload a file" })
@@ -74,9 +79,12 @@ export class FilesController {
     if (!file) {
       throw new BadRequestException("File is required");
     }
+    this.logger.log(File.UPLOAD_FILE, "Upload file request initialized", {
+      file,
+    });
 
-    const response = this.filesService.uploadFile(file, req.ip);
-    return { message: "File uploaded successfully", data: response };
+    const fileData = this.filesService.uploadFile(file, req.ip);
+    return { message: "File uploaded successfully", data: fileData };
   }
 
   @Get(":public_key")
@@ -114,6 +122,10 @@ export class FilesController {
     @Res() res: Response
   ) {
     const file = await this.filesService.getFileByPublicKey(public_key);
+    this.logger.log(File.DOWNLOAD_FILE, "Download file request initialized", {
+      file,
+      public_key,
+    });
     if (!file) {
       throw new NotFoundException("File not found");
     }
@@ -153,8 +165,13 @@ export class FilesController {
     },
   })
   remove(@Param("private_key") private_key: string): IControllerResult {
+    this.logger.log(File.DELETE_FILE, "Delete file request initialized", {
+      private_key,
+    });
+    // Check if the file exists in the database
     const deleted = this.filesService.deleteFileByPrivateKey(private_key);
     if (!deleted) throw new NotFoundException("File not found");
+
     return { message: "File deleted successfully" };
   }
 }
