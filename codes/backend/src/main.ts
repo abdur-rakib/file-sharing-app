@@ -5,6 +5,7 @@ import { RequestContextService } from "./shared/services/request-context.service
 import { Logger, ValidationPipe, VersioningType } from "@nestjs/common";
 import { HttpExceptionFilter } from "./filters/http-exception.filter";
 import { setupSwagger } from "./setup-swagger";
+import { ResponseInterceptor } from "./interceptors/response.interceptor";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -17,6 +18,7 @@ async function bootstrap() {
   app.useLogger(customLogger); // Replace the default logger with the custom logger
 
   app.enableCors();
+  app.useGlobalInterceptors(new ResponseInterceptor());
   app.useGlobalFilters(new HttpExceptionFilter());
 
   app.enableVersioning({
