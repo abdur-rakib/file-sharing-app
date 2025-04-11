@@ -11,13 +11,26 @@ import { IControllerResult } from "src/common/interfaces/controller-result.inter
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    const response = context.switchToHttp().getResponse();
+
     return next.handle().pipe(
-      map((data: IControllerResult) => ({
-        status: EStatusType.SUCCESS,
-        statusCode: context.switchToHttp().getResponse().statusCode,
-        message: data.message || "Request was successful",
-        data: data.data || data,
-      }))
+      map((data: any) => {
+        // If response is already sent (e.g., stream/download), skip wrapping
+        if (response.headersSent) return data;
+
+        // Try to format structured responses
+        const result: IControllerResult =
+          typeof data === "object" && data?.data !== undefined
+            ? data
+            : { message: "Request was successful", data };
+
+        return {
+          status: EStatusType.SUCCESS,
+          statusCode: response.statusCode,
+          message: result.message,
+          data: result.data,
+        };
+      })
     );
   }
 }
