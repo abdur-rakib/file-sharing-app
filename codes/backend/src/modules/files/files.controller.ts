@@ -32,7 +32,7 @@ export class FilesController {
   @UseInterceptors(
     FileInterceptor("file", {
       storage: diskStorage({
-        destination: process.env.FOLDER || "./uploads",
+        destination: process.env.FILE_UPLOAD_PATH || "./uploads",
         filename: (req, file, cb) => {
           const uniqueSuffix =
             Date.now() + "-" + Math.round(Math.random() * 1e9);

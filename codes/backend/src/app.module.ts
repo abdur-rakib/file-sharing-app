@@ -6,14 +6,22 @@ import { HttpLoggerMiddleware } from "./middlewares/http-logger.middleware";
 import { RequestIdMiddleware } from "./middlewares/request-id.middleware";
 import { FilesModule } from "./modules/files/files.module";
 import { DatabaseService } from "./database/database.service";
+import { ConfigModule } from "@nestjs/config";
+import { appConfig } from "./config/config";
 
 @Module({
-  imports: [SharedModule, FilesModule],
+  imports: [
+    SharedModule,
+    FilesModule,
+    // ConfigModule.forRoot({
+    //   isGlobal: true, // Makes the config module available globally
+    //   load: [appConfig], // Load custom configuration files
+    // }),
+  ],
   controllers: [AppController],
   providers: [AppService, DatabaseService],
   exports: [DatabaseService],
 })
-// Import necessary modules and middleware
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(HttpLoggerMiddleware).forRoutes("*");
