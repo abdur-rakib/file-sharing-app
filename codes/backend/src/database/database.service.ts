@@ -7,7 +7,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   private db: Database.Database;
 
   onModuleInit() {
-    const dbPath = path.resolve(__dirname, "../../data/metadata.db");
+    const dbPath = path.resolve(__dirname, "../../data/files.db");
     this.db = new Database(dbPath);
     this.initializeTables();
   }
@@ -28,7 +28,18 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         uploaded_at TEXT
       );
     `;
+
+    const createPublicKeyIndex = `
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_files_public_key ON files(public_key);
+  `;
+
+    const createPrivateKeyIndex = `
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_files_private_key ON files(private_key);
+  `;
+
     this.db.prepare(createTableSQL).run();
+    this.db.prepare(createPublicKeyIndex).run();
+    this.db.prepare(createPrivateKeyIndex).run();
   }
 
   get connection() {
