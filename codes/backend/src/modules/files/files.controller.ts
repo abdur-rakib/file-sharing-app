@@ -28,11 +28,15 @@ import { extname } from "path";
 import { IControllerResult } from "src/common/interfaces/controller-result.interface";
 import { FilesService } from "./files.service";
 import { Request, Response } from "express";
+import { IpUsageRepository } from "./ip-usage.repository";
 
 @Controller({ path: "files", version: "v1" })
 @ApiTags("Files")
 export class FilesController {
-  constructor(private readonly filesService: FilesService) {}
+  constructor(
+    private readonly filesService: FilesService,
+    private readonly ipUsageRepo: IpUsageRepository
+  ) {}
 
   @Post()
   @ApiOperation({ summary: "Upload a file" })
@@ -119,6 +123,10 @@ export class FilesController {
     if (!fs.existsSync(filePath)) {
       throw new NotFoundException("File not found on disk");
     }
+
+    // update the IP usage in the database
+    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+    this.ipUsageRepo.updateIpUsage(res.req.ip, file.size, false, today);
 
     // Set the headers for the response
     res.set({
