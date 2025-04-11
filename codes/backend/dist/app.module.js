@@ -10,12 +10,19 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
+const shared_module_1 = require("./shared/shared.module");
+const http_logger_middleware_1 = require("./middlewares/http-logger.middleware");
+const request_id_middleware_1 = require("./middlewares/request-id.middleware");
 let AppModule = class AppModule {
+    configure(consumer) {
+        consumer.apply(http_logger_middleware_1.HttpLoggerMiddleware).forRoutes("*");
+        consumer.apply(request_id_middleware_1.RequestIdMiddleware).forRoutes("*");
+    }
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [],
+        imports: [shared_module_1.SharedModule],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
     })

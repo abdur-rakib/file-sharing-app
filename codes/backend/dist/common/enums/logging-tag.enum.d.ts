@@ -1,0 +1,13 @@
+export declare enum HttpLogger {
+    HTTP_REQUEST = "HTTP_REQUEST"
+}
+export declare enum DbConnectivity {
+    DB_CONNECTIVITY = "DB_CONNECTIVITY"
+}
+export declare enum Workspace {
+    CREATE_NAMESPACE = "CREATE_NAMESPACE",
+    GET_ALL_NAMESPACES = "GET_ALL_NAMESPACES",
+    GET_NAMESPACE = "GET_NAMESPACE",
+    UPDATE_NAMESPACE = "UPDATE_NAMESPACE",
+    DELETE_NAMESPACE = "DELETE_NAMESPACE"
+}
