@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   Get,
   NotFoundException,
@@ -43,7 +44,9 @@ export class FilesController {
   @UseInterceptors(
     FileInterceptor("file", {
       storage: diskStorage({
-        destination: process.env.FILE_UPLOAD_PATH || "./uploads",
+        destination: (req, file, cb) => {
+          cb(null, process.env.FILE_UPLOAD_PATH || "./uploads");
+        },
         filename: (req, file, cb) => {
           const uniqueSuffix =
             Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -54,6 +57,10 @@ export class FilesController {
     })
   )
   async upload(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException("File is required");
+    }
+
     return this.filesService.uploadFile(file);
   }
 

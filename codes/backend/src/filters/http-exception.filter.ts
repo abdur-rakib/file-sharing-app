@@ -6,7 +6,8 @@ import {
   HttpStatus,
 } from "@nestjs/common";
 import { Response } from "express";
-import { statusType } from "src/common/constants/status-type";
+import { httpExceptionMessage } from "src/common/constants/http-exception-message";
+import { EStatusType } from "src/common/enums/response.enum";
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -20,11 +21,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
     const errorResponse = {
-      status: statusType.FAILED,
+      status: EStatusType.FAILED,
       code: status,
-      // message: HttpExceptionMessage[status],
+      message: httpExceptionMessage[status],
       reason: exception.response?.message || exception.message,
-      message: exception.response?.message || exception.message,
     };
 
     response.status(status).json(errorResponse);

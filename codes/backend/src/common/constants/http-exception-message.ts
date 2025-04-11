@@ -1,4 +1,4 @@
-export const HttpExceptionMessage: Record<number, string> = {
+export const httpExceptionMessage: Record<number, string> = {
   422: "Unprocessable Entity: Validation failed",
   404: "Not Found: The requested resource does not exist.",
   409: "Duplicate Resource: Resource already exists",
