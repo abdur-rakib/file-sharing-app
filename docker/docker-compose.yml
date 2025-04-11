@@ -1,0 +1,14 @@
+networks:
+  default:
+    driver: bridge
+
+services:
+  backend:
+    image: ${COMPOSE_PROJECT_NAME}-backend:${DOCKER_BUILD_MODE:-prod}
+    build:
+      context: ../
+      dockerfile: docker/backend/node.Dockerfile
+      args:
+        - TZ=${TIMEZONE}
+        - SHOULD_RUN_CHOWN_TO_APPUSER=false
+      target: ${DOCKER_BUILD_MODE}
