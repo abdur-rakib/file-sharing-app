@@ -11,6 +11,8 @@ export class GoogleFileUploadService implements IFileUploadService {
     //   path: `gs://bucket-name/${file.originalname}`,
     //   uploadedBy: ip,
     // };
+    // upload file to Google Cloud
+    // clean up local directory file
     // get updated file after uploading to Google Cloud
     const updatedFile = file;
     const fileData = this.filesService.uploadFile(updatedFile, ip);
