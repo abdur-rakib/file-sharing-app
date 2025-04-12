@@ -101,10 +101,10 @@ export class FilesController {
     return { message: "File uploaded successfully", data };
   }
 
-  @Get(":public_key")
+  @Get(":publicKey")
   @ApiOperation({ summary: "Download a file by public key" })
   @ApiParam({
-    name: "public_key",
+    name: "publicKey",
     description: "Public key associated with the uploaded file",
     type: String,
   })
@@ -131,14 +131,11 @@ export class FilesController {
       },
     },
   })
-  async download(
-    @Param("public_key") public_key: string,
-    @Res() res: Response
-  ) {
-    const file = await this.filesService.getFileByPublicKey(public_key);
+  async download(@Param("publicKey") publicKey: string, @Res() res: Response) {
+    const file = await this.filesService.getFileByPublicKey(publicKey);
     this.logger.log(File.DOWNLOAD_FILE, "Download file request initialized", {
       file,
-      public_key,
+      publicKey,
     });
     if (!file) {
       throw new NotFoundException("File not found");
@@ -165,7 +162,7 @@ export class FilesController {
     fileStream.pipe(res);
   }
 
-  @Delete(":private_key")
+  @Delete(":privateKey")
   @ApiNotFoundResponse({
     description: "Custom 404 error when file is not found",
     schema: {
@@ -178,12 +175,12 @@ export class FilesController {
       },
     },
   })
-  remove(@Param("private_key") private_key: string): IControllerResult {
+  remove(@Param("privateKey") privateKey: string): IControllerResult {
     this.logger.log(File.DELETE_FILE, "Delete file request initialized", {
-      private_key,
+      privateKey,
     });
     // Check if the file exists in the database
-    const deleted = this.filesService.deleteFileByPrivateKey(private_key);
+    const deleted = this.filesService.deleteFileByPrivateKey(privateKey);
     if (!deleted) throw new NotFoundException("File not found");
 
     return { message: "File deleted successfully" };

@@ -8,36 +8,36 @@ export class FilesRepository {
 
   save(file: IFile): void {
     const queryStatement = this.dbService.connection.prepare(`
-      INSERT INTO files (filename, path, mimetype, public_key, private_key, uploaded_at)
+      INSERT INTO files (filename, path, mimetype, publicKey, privateKey, uploadedAt)
       VALUES (?, ?, ?, ?, ?, ?)
     `);
     queryStatement.run(
       file.filename,
       file.path,
       file.mimetype,
-      file.public_key,
-      file.private_key,
-      file.uploaded_at
+      file.publicKey,
+      file.privateKey,
+      file.uploadedAt
     );
   }
 
   findByPublicKey(publicKey: string) {
     const queryStatement = this.dbService.connection.prepare(`
-      SELECT * FROM files WHERE public_key = ?
+      SELECT * FROM files WHERE publicKey = ?
     `);
     return queryStatement.get(publicKey);
   }
 
   deleteByPrivateKey(privateKey: string) {
     const getStmt = this.dbService.connection.prepare(`
-      SELECT * FROM files WHERE private_key = ?
+      SELECT * FROM files WHERE privateKey = ?
     `);
     const file = getStmt.get(privateKey);
 
     if (!file) return null;
 
     const delStmt = this.dbService.connection.prepare(`
-      DELETE FROM files WHERE private_key = ?
+      DELETE FROM files WHERE privateKey = ?
     `);
     delStmt.run(privateKey);
 

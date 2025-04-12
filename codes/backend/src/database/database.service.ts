@@ -23,9 +23,9 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         filename TEXT,
         path TEXT,
         mimetype TEXT,
-        public_key TEXT UNIQUE,
-        private_key TEXT UNIQUE,
-        uploaded_at TEXT
+        publicKey TEXT UNIQUE,
+        privateKey TEXT UNIQUE,
+        uploadedAt TEXT
       );
     `;
 

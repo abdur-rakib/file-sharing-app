@@ -11,8 +11,8 @@ export class FilesService {
     private readonly ipUsageRepo: IpUsageRepository
   ) {}
   uploadFile(file: Express.Multer.File, ip: string) {
-    const public_key = uuidv4();
-    const private_key = uuidv4();
+    const publicKey = uuidv4();
+    const privateKey = uuidv4();
 
     // construct the file data object
     // using the file information and the generated keys
@@ -20,9 +20,9 @@ export class FilesService {
       filename: file.filename,
       path: file.path,
       mimetype: file.mimetype,
-      public_key,
-      private_key,
-      uploaded_at: new Date().toISOString(),
+      publicKey,
+      privateKey,
+      uploadedAt: new Date().toISOString(),
     };
 
     // save the file data to the database
@@ -33,7 +33,7 @@ export class FilesService {
     this.ipUsageRepo.updateIpUsage(ip, file.size, true, today);
 
     // return the public and private keys
-    return { public_key, private_key };
+    return { publicKey, privateKey };
   }
 
   getFileByPublicKey(publicKey: string) {
