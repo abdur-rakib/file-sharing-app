@@ -1,4 +1,3 @@
-// google-file-upload.service.ts
 import { Injectable } from "@nestjs/common";
 import { IFileUploadService } from "../interfaces/files.interface";
 import { FilesService } from "./files.service";
