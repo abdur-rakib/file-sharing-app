@@ -79,9 +79,7 @@ export class FilesController {
     if (!file) {
       throw new BadRequestException("File is required");
     }
-    this.logger.log(File.UPLOAD_FILE, "Upload file request initialized", {
-      file,
-    });
+    this.logger.log(File.UPLOAD_FILE, "Upload file request initialized");
 
     const fileData = this.filesService.uploadFile(file, req.ip);
     return { message: "File uploaded successfully", data: fileData };
