@@ -28,6 +28,13 @@ export class FilesRepository {
     return queryStatement.get(publicKey);
   }
 
+  findByPrivateKey(privateKey: string) {
+    const queryStatement = this.dbService.connection.prepare(`
+      SELECT * FROM files WHERE privateKey = ?
+    `);
+    return queryStatement.get(privateKey);
+  }
+
   deleteByPrivateKey(privateKey: string) {
     const getStmt = this.dbService.connection.prepare(`
       SELECT * FROM files WHERE privateKey = ?

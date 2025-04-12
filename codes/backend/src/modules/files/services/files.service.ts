@@ -1,14 +1,23 @@
-import { Injectable } from "@nestjs/common";
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from "@nestjs/common";
 import { v4 as uuidv4 } from "uuid";
 import { getToday } from "../../../common/utils/date.utils";
 import { FilesRepository } from "../repositories/files.repository";
+import * as fs from "fs";
+import * as path from "path";
 import { IpUsageRepository } from "../repositories/ip-usage.repository";
+import { CustomLogger } from "../../../shared/services/custom-logger.service";
+import { File } from "src/common/enums/logging-tag.enum";
 
 @Injectable()
 export class FilesService {
   constructor(
     private readonly filesRepo: FilesRepository,
-    private readonly ipUsageRepo: IpUsageRepository
+    private readonly ipUsageRepo: IpUsageRepository,
+    private readonly logger: CustomLogger
   ) {}
   uploadFile(file: Express.Multer.File, ip: string) {
     const publicKey = uuidv4();
@@ -40,6 +49,30 @@ export class FilesService {
   }
 
   deleteFileByPrivateKey(privateKey: string) {
+    // Find the file metadata
+    const file = this.filesRepo.findByPrivateKey(privateKey);
+    if (!file) {
+      throw new NotFoundException("File not found");
+    }
+
+    // Delete the actual file from disk
+    try {
+      if (fs.existsSync(file.path)) {
+        fs.unlinkSync(file.path);
+      } else {
+        this.logger.warn(
+          File.DELETE_FILE,
+          `File at path "${file.path}" not found during deletion`
+        );
+      }
+    } catch (err) {
+      this.logger.error(`Failed to delete file at ${file.path}`, err);
+      throw new InternalServerErrorException(
+        "Failed to delete file from storage"
+      );
+    }
+
+    // Delete metadata from DB
     return this.filesRepo.deleteByPrivateKey(privateKey);
   }
 
