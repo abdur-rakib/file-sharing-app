@@ -31,7 +31,6 @@ import { File } from "../../common/enums/logging-tag.enum";
 import { IControllerResult } from "../../common/interfaces/controller-result.interface";
 import { IAppConfig } from "../../config/config.interface";
 import { CustomLogger } from "../../shared/services/custom-logger.service";
-import { IpUsageRepository } from "./repositories/ip-usage.repository";
 import { FileUploadFactory } from "./services/file-upload.factory";
 import { FilesService } from "./services/files.service";
 
@@ -90,6 +89,7 @@ export class FilesController {
       this.configservice.get<IAppConfig>("app").fileUplaodServiceProvider;
 
     // get file upload service from the factory
+    // use factory pattern to get the service
     const uploadService = this.fileUploadFactory.getService(
       fileUplaodServiceProvider
     );
