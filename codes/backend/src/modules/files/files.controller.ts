@@ -149,6 +149,7 @@ export class FilesController {
 
     // update the IP usage in the database
     const today = getToday();
+    // TODO: Need to access this through service class
     this.ipUsageRepo.updateIpUsage(res.req.ip, file.size, false, today);
 
     // Set the headers for the response
