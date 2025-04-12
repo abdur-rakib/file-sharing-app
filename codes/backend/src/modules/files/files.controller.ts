@@ -64,13 +64,20 @@ export class FilesController {
     FileInterceptor("file", {
       storage: diskStorage({
         destination: (req, file, cb) => {
-          cb(null, process.env.FILE_UPLOAD_PATH || "./uploads");
+          const uploadPath =
+            process.env.FILE_UPLOAD_PATH || path.join(process.cwd(), "uploads");
+
+          // Ensure folder exists
+          if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+          }
+
+          cb(null, uploadPath);
         },
         filename: (req, file, cb) => {
-          const uniqueSuffix =
-            Date.now() + "-" + Math.round(Math.random() * 1e9);
-          const ext = extname(file.originalname);
-          cb(null, uniqueSuffix + ext);
+          const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+          const ext = path.extname(file.originalname);
+          cb(null, `${uniqueSuffix}${ext}`);
         },
       }),
     })
