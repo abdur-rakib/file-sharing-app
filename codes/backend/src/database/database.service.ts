@@ -1,8 +1,8 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from "@nestjs/common";
+import { Injectable, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
 import * as Database from "better-sqlite3";
 import * as path from "path";
+import { DbConnectivity } from "../common/enums/logging-tag.enum";
 import { CustomLogger } from "../shared/services/custom-logger.service";
-import { DbConnectivity } from "src/common/enums/logging-tag.enum";
 
 @Injectable()
 export class DatabaseService implements OnModuleInit, OnModuleDestroy {
