@@ -26,7 +26,6 @@ import { Request, Response } from "express";
 import * as fs from "fs";
 import { diskStorage } from "multer";
 import * as path from "path";
-import { extname } from "path";
 import { File } from "../../common/enums/logging-tag.enum";
 import { IControllerResult } from "../../common/interfaces/controller-result.interface";
 import { IAppConfig } from "../../config/config.interface";
