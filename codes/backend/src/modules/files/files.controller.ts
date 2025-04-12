@@ -11,6 +11,7 @@ import {
   UploadedFile,
   UseInterceptors,
 } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { FileInterceptor } from "@nestjs/platform-express";
 import {
   ApiBody,
@@ -21,16 +22,19 @@ import {
   ApiParam,
   ApiTags,
 } from "@nestjs/swagger";
+import { Request, Response } from "express";
 import * as fs from "fs";
 import { diskStorage } from "multer";
 import * as path from "path";
 import { extname } from "path";
-import { IControllerResult } from "src/common/interfaces/controller-result.interface";
-import { FilesService } from "./files.service";
-import { Request, Response } from "express";
-import { IpUsageRepository } from "./ip-usage.repository";
-import { CustomLogger } from "src/shared/services/custom-logger.service";
 import { File } from "src/common/enums/logging-tag.enum";
+import { IControllerResult } from "src/common/interfaces/controller-result.interface";
+import { IAppConfig } from "src/config/config.interface";
+import { CustomLogger } from "src/shared/services/custom-logger.service";
+import { IpUsageRepository } from "./repositories/ip-usage.repository";
+import { FileUploadFactory } from "./services/file-upload.factory";
+import { FilesService } from "./services/files.service";
+import { getToday } from "src/common/utils/date.utils";
 
 @Controller({ path: "files", version: "v1" })
 @ApiTags("Files")
@@ -38,6 +42,8 @@ export class FilesController {
   constructor(
     private readonly filesService: FilesService,
     private readonly ipUsageRepo: IpUsageRepository,
+    private readonly fileUploadFactory: FileUploadFactory,
+    private readonly configservice: ConfigService,
     private readonly logger: CustomLogger
   ) {
     logger.setContext(FilesController.name);
@@ -72,17 +78,27 @@ export class FilesController {
       }),
     })
   )
-  upload(
+  async upload(
     @UploadedFile() file: Express.Multer.File,
     @Req() req: Request
-  ): IControllerResult {
+  ): Promise<IControllerResult> {
+    this.logger.log(File.UPLOAD_FILE, "Upload file request initialized");
     if (!file) {
       throw new BadRequestException("File is required");
     }
-    this.logger.log(File.UPLOAD_FILE, "Upload file request initialized");
 
-    const fileData = this.filesService.uploadFile(file, req.ip);
-    return { message: "File uploaded successfully", data: fileData };
+    // const fileData = this.filesService.uploadFile(file, req.ip);
+    const fileUplaodServiceProvider =
+      this.configservice.get<IAppConfig>("app").fileUplaodServiceProvider;
+
+    // get file upload service from the factory
+    const uploadService = this.fileUploadFactory.getService(
+      fileUplaodServiceProvider
+    );
+
+    const data = await uploadService.upload(file, req.ip);
+
+    return { message: "File uploaded successfully", data };
   }
 
   @Get(":public_key")
@@ -135,7 +151,7 @@ export class FilesController {
     }
 
     // update the IP usage in the database
-    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+    const today = getToday();
     this.ipUsageRepo.updateIpUsage(res.req.ip, file.size, false, today);
 
     // Set the headers for the response

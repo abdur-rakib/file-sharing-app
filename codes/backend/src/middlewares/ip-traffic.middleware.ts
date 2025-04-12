@@ -1,9 +1,9 @@
 import { Injectable, NestMiddleware, ForbiddenException } from "@nestjs/common";
 import { Request, Response, NextFunction } from "express";
-import { DatabaseService } from "../database/database.service";
 import { ConfigService } from "@nestjs/config";
 import { IAppConfig } from "src/config/config.interface";
-import { IpUsageRepository } from "src/modules/files/ip-usage.repository";
+import { IpUsageRepository } from "src/modules/files/repositories/ip-usage.repository";
+import { getToday } from "src/common/utils/date.utils";
 
 @Injectable()
 export class IpTrafficMiddleware implements NestMiddleware {
@@ -24,7 +24,7 @@ export class IpTrafficMiddleware implements NestMiddleware {
     const limitKey = isUpload ? "uploadBytes" : "downloadBytes";
     const contentLength = parseInt(req.headers["content-length"] || "0", 10);
 
-    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+    const today = getToday();
 
     let usage = this.ipUsageRepo.getIpUsage(ip, today);
 

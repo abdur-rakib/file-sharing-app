@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { DatabaseService } from "src/database/database.service";
-import { IFile } from "./interfaces/files.interface";
+import { IFile } from "../interfaces/files.interface";
 
 @Injectable()
 export class FilesRepository {

@@ -8,4 +8,6 @@ export const appConfig = registerAs("app", () => ({
   maxDownloadBytesPerIp: parseInt(
     process.env.MAX_DOWNLOAD_BYTES_PER_IP || "524288"
   ),
+  fileUplaodServiceProvider:
+    process.env.FILE_UPLOAD_SERVICE_PROVIDER || "local",
 }));

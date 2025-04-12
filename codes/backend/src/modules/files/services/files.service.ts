@@ -1,7 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { v4 as uuidv4 } from "uuid";
-import { FilesRepository } from "./files.repository";
-import { IpUsageRepository } from "./ip-usage.repository";
+import { FilesRepository } from "../repositories/files.repository";
+import { IpUsageRepository } from "../repositories/ip-usage.repository";
+import { getToday } from "src/common/utils/date.utils";
 
 @Injectable()
 export class FilesService {
@@ -28,7 +29,7 @@ export class FilesService {
     this.filesRepo.save(fileData);
 
     // update the IP usage in the database
-    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+    const today = getToday();
     this.ipUsageRepo.updateIpUsage(ip, file.size, true, today);
 
     // return the public and private keys
