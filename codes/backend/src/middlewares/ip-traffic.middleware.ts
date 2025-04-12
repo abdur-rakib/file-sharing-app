@@ -1,9 +1,9 @@
 import { Injectable, NestMiddleware, ForbiddenException } from "@nestjs/common";
 import { Request, Response, NextFunction } from "express";
 import { ConfigService } from "@nestjs/config";
-import { IAppConfig } from "src/config/config.interface";
-import { IpUsageRepository } from "src/modules/files/repositories/ip-usage.repository";
-import { getToday } from "src/common/utils/date.utils";
+import { IAppConfig } from "../config/config.interface";
+import { IpUsageRepository } from "../modules/files/repositories/ip-usage.repository";
+import { getToday } from "../common/utils/date.utils";
 
 @Injectable()
 export class IpTrafficMiddleware implements NestMiddleware {

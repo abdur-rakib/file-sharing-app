@@ -27,21 +27,19 @@ import * as fs from "fs";
 import { diskStorage } from "multer";
 import * as path from "path";
 import { extname } from "path";
-import { File } from "src/common/enums/logging-tag.enum";
-import { IControllerResult } from "src/common/interfaces/controller-result.interface";
-import { IAppConfig } from "src/config/config.interface";
-import { CustomLogger } from "src/shared/services/custom-logger.service";
+import { File } from "../../common/enums/logging-tag.enum";
+import { IControllerResult } from "../../common/interfaces/controller-result.interface";
+import { IAppConfig } from "../../config/config.interface";
+import { CustomLogger } from "../../shared/services/custom-logger.service";
 import { IpUsageRepository } from "./repositories/ip-usage.repository";
 import { FileUploadFactory } from "./services/file-upload.factory";
 import { FilesService } from "./services/files.service";
-import { getToday } from "src/common/utils/date.utils";
 
 @Controller({ path: "files", version: "v1" })
 @ApiTags("Files")
 export class FilesController {
   constructor(
     private readonly filesService: FilesService,
-    private readonly ipUsageRepo: IpUsageRepository,
     private readonly fileUploadFactory: FileUploadFactory,
     private readonly configservice: ConfigService,
     private readonly logger: CustomLogger

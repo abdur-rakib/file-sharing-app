@@ -1,7 +1,7 @@
-import { Injectable, NestMiddleware } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
-import { HttpLogger } from 'src/common/enums/logging-tag.enum';
-import { CustomLogger } from 'src/shared/services/custom-logger.service';
+import { Injectable, NestMiddleware } from "@nestjs/common";
+import { Request, Response, NextFunction } from "express";
+import { HttpLogger } from "../common/enums/logging-tag.enum";
+import { CustomLogger } from "../shared/services/custom-logger.service";
 
 @Injectable()
 export class HttpLoggerMiddleware implements NestMiddleware {
@@ -24,12 +24,12 @@ export class HttpLoggerMiddleware implements NestMiddleware {
       params,
       headers,
     } = req;
-    const user_agent = req.get('user-agent') || '';
-    const referer = req.get('referer') || '';
+    const user_agent = req.get("user-agent") || "";
+    const referer = req.get("referer") || "";
     // request start time
     const req_start = Date.now();
 
-    let responseBody = '';
+    let responseBody = "";
 
     // Override `res.write` to capture chunks of data
     const originalWrite = res.write.bind(res);
@@ -47,9 +47,9 @@ export class HttpLoggerMiddleware implements NestMiddleware {
       return originalEnd(chunk, ...args);
     };
 
-    res.on('finish', () => {
+    res.on("finish", () => {
       const { statusCode } = res;
-      const content_length = res.get('content-length');
+      const content_length = res.get("content-length");
       //   convert diff in to seconds
       const request_time = (Date.now() - req_start) / 1000;
 
@@ -83,12 +83,12 @@ export class HttpLoggerMiddleware implements NestMiddleware {
           headers,
         };
 
-        this.logger.log(HttpLogger.HTTP_REQUEST, 'Request Failed', {
+        this.logger.log(HttpLogger.HTTP_REQUEST, "Request Failed", {
           ...basicRequestMetaInfo,
           ...additionalRequestMetaInfo,
         });
       } else {
-        this.logger.log(HttpLogger.HTTP_REQUEST, 'Request Success', {
+        this.logger.log(HttpLogger.HTTP_REQUEST, "Request Success", {
           ...basicRequestMetaInfo,
         });
       }
