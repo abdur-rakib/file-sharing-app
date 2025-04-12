@@ -1,7 +1,6 @@
 import { Module } from "@nestjs/common";
 import { FilesService } from "./services/files.service";
 import { FilesController } from "./files.controller";
-import { DatabaseService } from "../../database/database.service";
 import { FilesRepository } from "./repositories/files.repository";
 import { IpUsageRepository } from "./repositories/ip-usage.repository";
 import { FileUploadFactory } from "./services/file-upload.factory";
@@ -13,7 +12,6 @@ import { GoogleFileUploadService } from "./services/google-file-upload.service";
   providers: [
     FilesService,
     FilesRepository,
-    DatabaseService,
     IpUsageRepository,
     FileUploadFactory,
     LocalFileUploadService,

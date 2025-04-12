@@ -3,7 +3,6 @@ import { ConfigModule } from "@nestjs/config";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { appConfig, dbConfig } from "./config/config";
-import { DatabaseService } from "./database/database.service";
 import { HttpLoggerMiddleware } from "./middlewares/http-logger.middleware";
 import { IpTrafficMiddleware } from "./middlewares/ip-traffic.middleware";
 import { RequestIdMiddleware } from "./middlewares/request-id.middleware";
@@ -21,8 +20,7 @@ import { SharedModule } from "./shared/shared.module";
     }),
   ],
   controllers: [AppController],
-  providers: [AppService, DatabaseService, IpUsageRepository],
-  exports: [DatabaseService],
+  providers: [AppService, IpUsageRepository],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
