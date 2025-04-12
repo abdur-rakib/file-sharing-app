@@ -1,12 +1,18 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import * as Database from "better-sqlite3";
+import * as fs from "fs";
 import * as path from "path";
 import { DbConnectivity } from "../common/enums/logging-tag.enum";
+import { IDBConfig } from "../config/config.interface";
 import { CustomLogger } from "../shared/services/custom-logger.service";
 
 @Injectable()
 export class DatabaseService implements OnModuleInit, OnModuleDestroy {
-  constructor(private readonly logger: CustomLogger) {
+  constructor(
+    private readonly logger: CustomLogger,
+    private readonly configService: ConfigService
+  ) {
     this.logger.setContext(DatabaseService.name);
   }
   private db: Database.Database;
@@ -30,7 +36,15 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   }
 
   private getDatabasePath(): string {
-    return path.resolve(__dirname, "../../data/files.db");
+    const relativePath = this.configService.get<IDBConfig>("db").dbRelativePath;
+    const fullPath = path.resolve(process.cwd(), relativePath);
+
+    const dir = path.dirname(fullPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    return fullPath;
   }
 
   private initializeTables() {

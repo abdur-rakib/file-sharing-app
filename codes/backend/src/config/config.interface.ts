@@ -4,3 +4,7 @@ export interface IAppConfig {
   maxDownloadBytesPerIp: number;
   fileUplaodServiceProvider?: "local" | "google";
 }
+
+export interface IDBConfig {
+  dbRelativePath: string;
+}

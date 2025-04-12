@@ -11,3 +11,7 @@ export const appConfig = registerAs("app", () => ({
   fileUplaodServiceProvider:
     process.env.FILE_UPLOAD_SERVICE_PROVIDER || "local",
 }));
+
+export const dbConfig = registerAs("db", () => ({
+  dbRelativePath: process.env.DB_RELATIVE_PATH || "./data/files.db",
+}));
