@@ -1,15 +1,15 @@
 import { MiddlewareConsumer, Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
-import { SharedModule } from "./shared/shared.module";
+import { appConfig } from "./config/config";
+import { DatabaseService } from "./database/database.service";
 import { HttpLoggerMiddleware } from "./middlewares/http-logger.middleware";
+import { IpTrafficMiddleware } from "./middlewares/ip-traffic.middleware";
 import { RequestIdMiddleware } from "./middlewares/request-id.middleware";
 import { FilesModule } from "./modules/files/files.module";
-import { DatabaseService } from "./database/database.service";
-import { ConfigModule } from "@nestjs/config";
-import { appConfig } from "./config/config";
-import { IpTrafficMiddleware } from "./middlewares/ip-traffic.middleware";
 import { IpUsageRepository } from "./modules/files/repositories/ip-usage.repository";
+import { SharedModule } from "./shared/shared.module";
 
 @Module({
   imports: [
