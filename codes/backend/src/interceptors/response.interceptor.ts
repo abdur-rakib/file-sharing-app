@@ -5,8 +5,8 @@ import {
   CallHandler,
 } from "@nestjs/common";
 import { Observable, map } from "rxjs";
-import { EStatusType } from "src/common/enums/response.enum";
-import { IControllerResult } from "src/common/interfaces/controller-result.interface";
+import { EStatusType } from "../common/enums/response.enum";
+import { IControllerResult } from "../common/interfaces/controller-result.interface";
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {

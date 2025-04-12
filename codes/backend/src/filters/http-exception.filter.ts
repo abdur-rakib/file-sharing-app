@@ -6,8 +6,8 @@ import {
   HttpStatus,
 } from "@nestjs/common";
 import { Response } from "express";
-import { httpExceptionMessage } from "src/common/constants/http-exception-message";
-import { EStatusType } from "src/common/enums/response.enum";
+import { httpExceptionMessage } from "../common/constants/http-exception-message";
+import { EStatusType } from "../common/enums/response.enum";
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
