@@ -29,8 +29,7 @@ export class FilesService {
     this.filesRepo.save(fileData);
 
     // update the IP usage in the database
-    const today = getToday();
-    this.ipUsageRepo.updateIpUsage(ip, file.size, true, today);
+    this.updateIpUsage(ip, file.size, true);
 
     // return the public and private keys
     return { publicKey, privateKey };
@@ -42,5 +41,10 @@ export class FilesService {
 
   deleteFileByPrivateKey(privateKey: string) {
     return this.filesRepo.deleteByPrivateKey(privateKey);
+  }
+
+  updateIpUsage(ip: string, size: number, isUpload: boolean) {
+    const today = getToday();
+    this.ipUsageRepo.updateIpUsage(ip, size, isUpload, today);
   }
 }

@@ -131,7 +131,11 @@ export class FilesController {
       },
     },
   })
-  async download(@Param("publicKey") publicKey: string, @Res() res: Response) {
+  async download(
+    @Param("publicKey") publicKey: string,
+    @Res() res: Response,
+    @Req() req: Request
+  ): Promise<void> {
     const file = await this.filesService.getFileByPublicKey(publicKey);
     this.logger.log(File.DOWNLOAD_FILE, "Download file request initialized", {
       file,
@@ -148,9 +152,7 @@ export class FilesController {
     }
 
     // update the IP usage in the database
-    const today = getToday();
-    // TODO: Need to access this through service class
-    this.ipUsageRepo.updateIpUsage(res.req.ip, file.size, false, today);
+    this.filesService.updateIpUsage(req.ip, file.size, false);
 
     // Set the headers for the response
     res.set({
