@@ -4,12 +4,12 @@ import { FilesRepository } from "../repositories/files.repository";
 import { IpUsageRepository } from "../repositories/ip-usage.repository";
 import { CustomLogger } from "../../../shared/services/custom-logger.service";
 
-// Mocking the uuid module to return a fixed UUID
+// Mocking uuid
 jest.mock("uuid", () => ({
   v4: jest.fn().mockReturnValue("mock-uuid"),
 }));
 
-// Mocking the date utility to return a fixed date
+// Mocking date utils
 jest.mock("../../../common/utils/date.utils", () => ({
   getToday: jest.fn(() => "2025-04-10"),
 }));
@@ -18,6 +18,18 @@ describe("FilesService", () => {
   let service: FilesService;
   let filesRepo: jest.Mocked<FilesRepository>;
   let ipUsageRepo: jest.Mocked<IpUsageRepository>;
+
+  const privateKey = "some-private-key";
+  const publicKey = "some-public-key";
+  const mockFile = {
+    filename: "test.txt",
+    mimetype: "text/plain",
+    size: 1234,
+    path: "uploads/test.txt",
+    publicKey,
+    privateKey,
+    uploadedAt: "2025-04-10T00:00:00.000Z",
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -56,7 +68,6 @@ describe("FilesService", () => {
 
   describe("uploadFile", () => {
     it("should save file and update IP usage", () => {
-      // arrange
       const file = {
         filename: "test.txt",
         path: "uploads/test.txt",
@@ -64,14 +75,12 @@ describe("FilesService", () => {
         size: 1234,
       } as Express.Multer.File;
 
-      // act
       const result = service.uploadFile(file, "127.0.0.1");
 
-      // assert
       expect(filesRepo.save).toHaveBeenCalledWith({
-        filename: "test.txt",
-        path: "uploads/test.txt",
-        mimetype: "text/plain",
+        filename: file.filename,
+        path: file.path,
+        mimetype: file.mimetype,
         publicKey: "mock-uuid",
         privateKey: "mock-uuid",
         uploadedAt: expect.any(String),
@@ -79,7 +88,7 @@ describe("FilesService", () => {
 
       expect(ipUsageRepo.updateIpUsage).toHaveBeenCalledWith(
         "127.0.0.1",
-        1234,
+        file.size,
         true,
         "2025-04-10"
       );
@@ -93,69 +102,39 @@ describe("FilesService", () => {
 
   describe("getFileByPublicKey", () => {
     it("should return file by public key", () => {
-      // arrange
-      const mockFile = {
-        filename: "test.txt",
-        mimetype: "text/plain",
-        size: 1234,
-        path: "uploads/test.txt",
-        publicKey: "some-public-key",
-        privateKey: "some-private-key",
-        uploadedAt: "2025-04-10T00:00:00.000Z",
-      };
       filesRepo.findByPublicKey.mockReturnValue(mockFile);
 
-      // act
-      const result = service.getFileByPublicKey("some-public-key");
+      const result = service.getFileByPublicKey(publicKey);
 
-      // assert
       expect(result).toBe(mockFile);
-      expect(filesRepo.findByPublicKey).toHaveBeenCalledWith("some-public-key");
+      expect(filesRepo.findByPublicKey).toHaveBeenCalledWith(publicKey);
     });
   });
 
   describe("deleteFileByPrivateKey", () => {
     it("should delete file by private key", () => {
-      // arrange
-      const mockFile = {
-        filename: "test.txt",
-        mimetype: "text/plain",
-        size: 1234,
-        path: "uploads/test.txt",
-        publicKey: "some-public-key",
-        privateKey: "some-private-key",
-        uploadedAt: "2025-04-10T00:00:00.000Z",
-      };
       filesRepo.findByPrivateKey.mockReturnValue(mockFile);
 
-      // arrange
-      const privateKey = "some-private-key";
-
-      // act
       service.deleteFileByPrivateKey(privateKey);
 
-      // assert
       expect(filesRepo.deleteByPrivateKey).toHaveBeenCalledWith(privateKey);
     });
   });
 
   describe("updateIpUsage", () => {
     it("should call updateIpUsage in repo with correct args", () => {
-      // arrange
       const updateIpUsageArgs = {
         ip: "1.2.3.4",
         size: 1000,
         isUpload: true,
       };
 
-      // act
       service.updateIpUsage(
         updateIpUsageArgs.ip,
         updateIpUsageArgs.size,
         updateIpUsageArgs.isUpload
       );
 
-      // assert
       expect(ipUsageRepo.updateIpUsage).toHaveBeenCalledWith(
         updateIpUsageArgs.ip,
         updateIpUsageArgs.size,
