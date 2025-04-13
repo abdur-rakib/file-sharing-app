@@ -1,9 +1,24 @@
+// Mock better-sqlite3 to prevent real DB calls in tests
+jest.mock("better-sqlite3", () => {
+  return {
+    Database: jest.fn().mockReturnValue({
+      prepare: jest.fn().mockReturnThis(),
+      run: jest.fn(),
+      all: jest.fn(),
+    }),
+  };
+});
+
 import { Test, TestingModule } from "@nestjs/testing";
-import { FilesService } from "./files.service";
+import { CustomLogger } from "../../../shared/services/custom-logger.service";
 import { FilesRepository } from "../repositories/files.repository";
 import { IpUsageRepository } from "../repositories/ip-usage.repository";
-import { CustomLogger } from "../../../shared/services/custom-logger.service";
-import { NotFoundException } from "@nestjs/common";
+import { FilesService } from "./files.service";
+import {
+  InternalServerErrorException,
+  NotFoundException,
+} from "@nestjs/common";
+import * as fs from "fs";
 
 // Mocking the uuid module to return a fixed UUID
 jest.mock("uuid", () => ({
@@ -13,6 +28,12 @@ jest.mock("uuid", () => ({
 // Mocking the date utility to return a fixed date
 jest.mock("../../../common/utils/date.utils", () => ({
   getToday: jest.fn(() => "2025-04-10"),
+}));
+
+// Mock fs module methods
+jest.mock("fs", () => ({
+  existsSync: jest.fn(),
+  unlinkSync: jest.fn(),
 }));
 
 describe("FilesService", () => {
@@ -118,17 +139,55 @@ describe("FilesService", () => {
   });
 
   describe("deleteFileByPrivateKey", () => {
-    it("should delete file by private key", () => {
+    it("should delete file by private key and remove metadata", () => {
+      // Arrange
       filesRepo.findByPrivateKey.mockReturnValue(mockFile);
+      (fs.existsSync as jest.Mock).mockReturnValue(true); // File exists
 
+      // Act
       service.deleteFileByPrivateKey(privateKey);
 
+      // Assert
       expect(filesRepo.deleteByPrivateKey).toHaveBeenCalledWith(privateKey);
+      expect(fs.unlinkSync).toHaveBeenCalledWith(mockFile.path);
+    });
+
+    it("should log a warning if file does not exist during deletion", () => {
+      // Arrange
+      filesRepo.findByPrivateKey.mockReturnValue(mockFile);
+      (fs.existsSync as jest.Mock).mockReturnValue(false); // File does not exist
+
+      // Act
+      service.deleteFileByPrivateKey(privateKey);
+
+      // Assert
+      expect(filesRepo.deleteByPrivateKey).toHaveBeenCalledWith(privateKey);
+      expect(fs.unlinkSync).not.toHaveBeenCalled(); // unlink should not be called if file doesn't exist
+      expect(service["logger"].warn).toHaveBeenCalledWith(
+        "DELETE_FILE",
+        `File at path "uploads/test.txt" not found during deletion`
+      );
+    });
+
+    it("should throw InternalServerErrorException if deletion fails", () => {
+      // Arrange
+      filesRepo.findByPrivateKey.mockReturnValue(mockFile);
+      (fs.existsSync as jest.Mock).mockReturnValue(true); // File exists
+      (fs.unlinkSync as jest.Mock).mockImplementation(() => {
+        throw new Error("File deletion failed");
+      });
+
+      // Act & Assert
+      expect(() => service.deleteFileByPrivateKey(privateKey)).toThrow(
+        InternalServerErrorException
+      );
     });
 
     it("should throw NotFoundException if file is not found", () => {
-      filesRepo.findByPrivateKey.mockReturnValue(undefined);
+      // Arrange
+      filesRepo.findByPrivateKey.mockReturnValue(undefined); // File not found
 
+      // Act & Assert
       expect(() => service.deleteFileByPrivateKey(privateKey)).toThrow(
         NotFoundException
       );
