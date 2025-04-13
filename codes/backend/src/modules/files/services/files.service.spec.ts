@@ -2,6 +2,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { FilesService } from "./files.service";
 import { FilesRepository } from "../repositories/files.repository";
 import { IpUsageRepository } from "../repositories/ip-usage.repository";
+import { CustomLogger } from "../../../shared/services/custom-logger.service";
 
 // Mocking the uuid module to return a fixed UUID
 jest.mock("uuid", () => ({
@@ -27,6 +28,7 @@ describe("FilesService", () => {
           useValue: {
             save: jest.fn(),
             findByPublicKey: jest.fn(),
+            findByPrivateKey: jest.fn(),
             deleteByPrivateKey: jest.fn(),
           },
         },
@@ -34,6 +36,14 @@ describe("FilesService", () => {
           provide: IpUsageRepository,
           useValue: {
             updateIpUsage: jest.fn(),
+          },
+        },
+        {
+          provide: CustomLogger,
+          useValue: {
+            log: jest.fn(),
+            error: jest.fn(),
+            warn: jest.fn(),
           },
         },
       ],
@@ -106,6 +116,18 @@ describe("FilesService", () => {
 
   describe("deleteFileByPrivateKey", () => {
     it("should delete file by private key", () => {
+      // arrange
+      const mockFile = {
+        filename: "test.txt",
+        mimetype: "text/plain",
+        size: 1234,
+        path: "uploads/test.txt",
+        publicKey: "some-public-key",
+        privateKey: "some-private-key",
+        uploadedAt: "2025-04-10T00:00:00.000Z",
+      };
+      filesRepo.findByPrivateKey.mockReturnValue(mockFile);
+
       // arrange
       const privateKey = "some-private-key";
 
