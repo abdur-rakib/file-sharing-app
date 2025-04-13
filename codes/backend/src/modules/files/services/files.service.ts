@@ -3,14 +3,13 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from "@nestjs/common";
-import { v4 as uuidv4 } from "uuid";
-import { getToday } from "../../../common/utils/date.utils";
-import { FilesRepository } from "../repositories/files.repository";
 import * as fs from "fs";
-import * as path from "path";
-import { IpUsageRepository } from "../repositories/ip-usage.repository";
+import { v4 as uuidv4 } from "uuid";
+import { File } from "../../../common/enums/logging-tag.enum";
+import { getToday } from "../../../common/utils/date.utils";
 import { CustomLogger } from "../../../shared/services/custom-logger.service";
-import { File } from "src/common/enums/logging-tag.enum";
+import { FilesRepository } from "../repositories/files.repository";
+import { IpUsageRepository } from "../repositories/ip-usage.repository";
 
 @Injectable()
 export class FilesService {
