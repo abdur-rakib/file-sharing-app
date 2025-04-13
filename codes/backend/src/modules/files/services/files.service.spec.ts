@@ -3,13 +3,14 @@ import { FilesService } from "./files.service";
 import { FilesRepository } from "../repositories/files.repository";
 import { IpUsageRepository } from "../repositories/ip-usage.repository";
 import { CustomLogger } from "../../../shared/services/custom-logger.service";
+import { NotFoundException } from "@nestjs/common";
 
-// Mocking uuid
+// Mocking the uuid module to return a fixed UUID
 jest.mock("uuid", () => ({
   v4: jest.fn().mockReturnValue("mock-uuid"),
 }));
 
-// Mocking date utils
+// Mocking the date utility to return a fixed date
 jest.mock("../../../common/utils/date.utils", () => ({
   getToday: jest.fn(() => "2025-04-10"),
 }));
@@ -19,17 +20,8 @@ describe("FilesService", () => {
   let filesRepo: jest.Mocked<FilesRepository>;
   let ipUsageRepo: jest.Mocked<IpUsageRepository>;
 
-  const privateKey = "some-private-key";
-  const publicKey = "some-public-key";
-  const mockFile = {
-    filename: "test.txt",
-    mimetype: "text/plain",
-    size: 1234,
-    path: "uploads/test.txt",
-    publicKey,
-    privateKey,
-    uploadedAt: "2025-04-10T00:00:00.000Z",
-  };
+  let mockFile;
+  let privateKey: string;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -64,6 +56,20 @@ describe("FilesService", () => {
     service = module.get<FilesService>(FilesService);
     filesRepo = module.get(FilesRepository);
     ipUsageRepo = module.get(IpUsageRepository);
+
+    mockFile = {
+      filename: "test.txt",
+      mimetype: "text/plain",
+      size: 1234,
+      path: "uploads/test.txt",
+      publicKey: "some-public-key",
+      privateKey: "some-private-key",
+      uploadedAt: "2025-04-10T00:00:00.000Z",
+    };
+
+    privateKey = "some-private-key";
+
+    jest.clearAllMocks();
   });
 
   describe("uploadFile", () => {
@@ -78,9 +84,9 @@ describe("FilesService", () => {
       const result = service.uploadFile(file, "127.0.0.1");
 
       expect(filesRepo.save).toHaveBeenCalledWith({
-        filename: file.filename,
-        path: file.path,
-        mimetype: file.mimetype,
+        filename: "test.txt",
+        path: "uploads/test.txt",
+        mimetype: "text/plain",
         publicKey: "mock-uuid",
         privateKey: "mock-uuid",
         uploadedAt: expect.any(String),
@@ -88,7 +94,7 @@ describe("FilesService", () => {
 
       expect(ipUsageRepo.updateIpUsage).toHaveBeenCalledWith(
         "127.0.0.1",
-        file.size,
+        1234,
         true,
         "2025-04-10"
       );
@@ -104,10 +110,10 @@ describe("FilesService", () => {
     it("should return file by public key", () => {
       filesRepo.findByPublicKey.mockReturnValue(mockFile);
 
-      const result = service.getFileByPublicKey(publicKey);
+      const result = service.getFileByPublicKey("some-public-key");
 
       expect(result).toBe(mockFile);
-      expect(filesRepo.findByPublicKey).toHaveBeenCalledWith(publicKey);
+      expect(filesRepo.findByPublicKey).toHaveBeenCalledWith("some-public-key");
     });
   });
 
@@ -118,6 +124,14 @@ describe("FilesService", () => {
       service.deleteFileByPrivateKey(privateKey);
 
       expect(filesRepo.deleteByPrivateKey).toHaveBeenCalledWith(privateKey);
+    });
+
+    it("should throw NotFoundException if file is not found", () => {
+      filesRepo.findByPrivateKey.mockReturnValue(undefined);
+
+      expect(() => service.deleteFileByPrivateKey(privateKey)).toThrow(
+        NotFoundException
+      );
     });
   });
 
