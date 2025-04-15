@@ -1,14 +1,3 @@
-// Mock better-sqlite3 to prevent real DB calls in tests
-jest.mock("better-sqlite3", () => {
-  return {
-    Database: jest.fn().mockReturnValue({
-      prepare: jest.fn().mockReturnThis(),
-      run: jest.fn(),
-      all: jest.fn(),
-    }),
-  };
-});
-
 import { Test, TestingModule } from "@nestjs/testing";
 import { CustomLogger } from "../../../shared/services/custom-logger.service";
 import { FilesRepository } from "../repositories/files.repository";
@@ -19,6 +8,17 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import * as fs from "fs";
+
+// Mock better-sqlite3 to prevent real DB calls in tests
+jest.mock("better-sqlite3", () => {
+  return {
+    Database: jest.fn().mockReturnValue({
+      prepare: jest.fn().mockReturnThis(),
+      run: jest.fn(),
+      all: jest.fn(),
+    }),
+  };
+});
 
 // Mocking the uuid module to return a fixed UUID
 jest.mock("uuid", () => ({
