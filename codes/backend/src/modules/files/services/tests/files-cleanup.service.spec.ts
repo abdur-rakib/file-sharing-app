@@ -1,9 +1,9 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { ConfigService } from "@nestjs/config";
-import { FileCleanupService } from "./file-cleanup.service";
-import { FilesRepository } from "../repositories/files.repository";
-import { FilesService } from "./files.service";
-import { CustomLogger } from "../../../shared/services/custom-logger.service";
+import { FileCleanupService } from "../file-cleanup.service";
+import { FilesRepository } from "../../repositories/files.repository";
+import { FilesService } from "../files.service";
+import { CustomLogger } from "../../../../shared/services/custom-logger.service";
 
 describe("FileCleanupService", () => {
   let service: FileCleanupService;

@@ -1,5 +1,5 @@
-import { LocalFileUploadService } from "./local-file-upload.service";
-import { FilesService } from "./files.service";
+import { LocalFileUploadService } from "../local-file-upload.service";
+import { FilesService } from "../files.service";
 
 describe("LocalFileUploadService", () => {
   let service: LocalFileUploadService;

@@ -1,8 +1,8 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { CustomLogger } from "../../../shared/services/custom-logger.service";
-import { FilesRepository } from "../repositories/files.repository";
-import { IpUsageRepository } from "../repositories/ip-usage.repository";
-import { FilesService } from "./files.service";
+import { CustomLogger } from "../../../../shared/services/custom-logger.service";
+import { FilesRepository } from "../../repositories/files.repository";
+import { IpUsageRepository } from "../../repositories/ip-usage.repository";
+import { FilesService } from "../files.service";
 import {
   InternalServerErrorException,
   NotFoundException,

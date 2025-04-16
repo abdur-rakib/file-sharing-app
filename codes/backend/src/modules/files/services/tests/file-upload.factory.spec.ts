@@ -1,6 +1,6 @@
-import { FileUploadFactory } from "./file-upload.factory";
-import { LocalFileUploadService } from "./local-file-upload.service";
-import { GoogleFileUploadService } from "./google-file-upload.service";
+import { FileUploadFactory } from "../file-upload.factory";
+import { LocalFileUploadService } from "../local-file-upload.service";
+import { GoogleFileUploadService } from "../google-file-upload.service";
 
 describe("FileUploadFactory", () => {
   let factory: FileUploadFactory;
