@@ -10,13 +10,18 @@ import { getToday } from "../../../common/utils/date.utils";
 import { CustomLogger } from "../../../shared/services/custom-logger.service";
 import { FilesRepository } from "../repositories/files.repository";
 import { IpUsageRepository } from "../repositories/ip-usage.repository";
+import { FileUploadFactory } from "./file-upload.factory";
+import { ConfigService } from "@nestjs/config";
+import { IAppConfig } from "src/config/config.interface";
 
 @Injectable()
 export class FilesService {
   constructor(
     private readonly filesRepo: FilesRepository,
     private readonly ipUsageRepo: IpUsageRepository,
-    private readonly logger: CustomLogger
+    private readonly logger: CustomLogger,
+    private readonly fileUploadFactory: FileUploadFactory,
+    private readonly configService: ConfigService
   ) {}
   uploadFile(file: Express.Multer.File, ip: string) {
     const publicKey = uuidv4();
@@ -49,29 +54,19 @@ export class FilesService {
     return this.filesRepo.findByPublicKey(publicKey);
   }
 
-  deleteFileByPrivateKey(privateKey: string) {
+  async deleteFileByPrivateKey(privateKey: string) {
     // Find the file metadata
     const file = this.filesRepo.findByPrivateKey(privateKey);
     if (!file) {
       throw new NotFoundException("File not found");
     }
 
-    // Delete the actual file from disk
-    try {
-      if (fs.existsSync(file.path)) {
-        fs.unlinkSync(file.path);
-      } else {
-        this.logger.warn(
-          File.DELETE_FILE,
-          `File at path "${file.path}" not found during deletion`
-        );
-      }
-    } catch (err) {
-      this.logger.error(`Failed to delete file at ${file.path}`, err);
-      throw new InternalServerErrorException(
-        "Failed to delete file from storage"
-      );
-    }
+    // Delete the actual file from disk/cloud storage
+    const provider =
+      this.configService.get<IAppConfig>("app").fileUplaodServiceProvider;
+    const fileManageService = this.fileUploadFactory.getService(provider);
+
+    await fileManageService.delete(file);
 
     // Delete metadata from DB
     return this.filesRepo.deleteByPrivateKey(privateKey);

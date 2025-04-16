@@ -72,9 +72,9 @@ export class FilesController {
 
     const provider =
       this.configservice.get<IAppConfig>("app").fileUplaodServiceProvider;
-    const uploadService = this.fileUploadFactory.getService(provider);
+    const fileManageService = this.fileUploadFactory.getService(provider);
 
-    const data = await uploadService.upload(file, req.ip);
+    const data = await fileManageService.upload(file, req.ip);
 
     return {
       message: "File uploaded successfully",
