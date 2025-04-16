@@ -18,4 +18,5 @@ export class CloudFileManageService implements IFileManageService {
     const fileData = this.filesService.uploadFile(updatedFile, ip);
     return fileData;
   }
+  delete(file: Express.Multer.File): any {}
 }

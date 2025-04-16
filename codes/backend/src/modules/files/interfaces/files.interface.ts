@@ -10,4 +10,5 @@ export interface IFile {
 
 export interface IFileManageService {
   upload(file: Express.Multer.File, ip: string): Promise<any>;
+  delete(file: Express.Multer.File): Promise<any>;
 }
