@@ -24,10 +24,10 @@ import {
 } from "@nestjs/swagger";
 import { Request, Response } from "express";
 import * as fs from "fs";
-import { diskStorage } from "multer";
 import * as path from "path";
 import { File } from "../../common/enums/logging-tag.enum";
 import { IControllerResult } from "../../common/interfaces/controller-result.interface";
+import { fileUploadToDisk } from "../../common/utils/file-upload";
 import { IAppConfig } from "../../config/config.interface";
 import { CustomLogger } from "../../shared/services/custom-logger.service";
 import { FileUploadFactory } from "./services/file-upload.factory";
@@ -59,50 +59,27 @@ export class FilesController {
       },
     },
   })
-  @UseInterceptors(
-    FileInterceptor("file", {
-      storage: diskStorage({
-        destination: (req, file, cb) => {
-          const uploadPath =
-            process.env.FILE_UPLOAD_PATH || path.join(process.cwd(), "uploads");
-
-          // Ensure folder exists
-          if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true });
-          }
-
-          cb(null, uploadPath);
-        },
-        filename: (req, file, cb) => {
-          const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-          const ext = path.extname(file.originalname);
-          cb(null, `${uniqueSuffix}${ext}`);
-        },
-      }),
-    })
-  )
+  @UseInterceptors(FileInterceptor("file", fileUploadToDisk()))
   async upload(
     @UploadedFile() file: Express.Multer.File,
     @Req() req: Request
   ): Promise<IControllerResult> {
     this.logger.log(File.UPLOAD_FILE, "Upload file request initialized");
+
     if (!file) {
       throw new BadRequestException("File is required");
     }
 
-    // const fileData = this.filesService.uploadFile(file, req.ip);
-    const fileUplaodServiceProvider =
+    const provider =
       this.configservice.get<IAppConfig>("app").fileUplaodServiceProvider;
-
-    // get file upload service from the factory
-    // use factory pattern to get the service
-    const uploadService = this.fileUploadFactory.getService(
-      fileUplaodServiceProvider
-    );
+    const uploadService = this.fileUploadFactory.getService(provider);
 
     const data = await uploadService.upload(file, req.ip);
 
-    return { message: "File uploaded successfully", data };
+    return {
+      message: "File uploaded successfully",
+      data,
+    };
   }
 
   @Get(":publicKey")
