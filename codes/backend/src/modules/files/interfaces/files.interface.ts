@@ -5,6 +5,7 @@ export interface IFile {
   publicKey: string;
   privateKey: string;
   uploadedAt: string;
+  lastAccessedAt: string;
 }
 
 export interface IFileUploadService {

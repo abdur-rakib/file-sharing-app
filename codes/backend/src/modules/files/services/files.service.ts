@@ -31,6 +31,7 @@ export class FilesService {
       publicKey,
       privateKey,
       uploadedAt: new Date().toISOString(),
+      lastAccessedAt: new Date().toISOString(),
     };
 
     // save the file data to the database

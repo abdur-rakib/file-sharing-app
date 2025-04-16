@@ -8,8 +8,8 @@ export class FilesRepository {
 
   save(file: IFile): void {
     const queryStatement = this.dbService.connection.prepare(`
-      INSERT INTO files (filename, path, mimetype, publicKey, privateKey, uploadedAt)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO files (filename, path, mimetype, publicKey, privateKey, uploadedAt, lastAccessedAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
     queryStatement.run(
       file.filename,
@@ -17,7 +17,8 @@ export class FilesRepository {
       file.mimetype,
       file.publicKey,
       file.privateKey,
-      file.uploadedAt
+      file.uploadedAt,
+      file.lastAccessedAt
     );
   }
 

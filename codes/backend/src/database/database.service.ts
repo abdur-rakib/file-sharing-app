@@ -80,7 +80,8 @@ const CREATE_FILES_TABLE_SQL = `
     mimetype TEXT,
     publicKey TEXT UNIQUE,
     privateKey TEXT UNIQUE,
-    uploadedAt TEXT
+    uploadedAt TEXT,
+    lastAccessedAt TEXT
   );
 `;
 

@@ -86,6 +86,7 @@ describe("FilesService", () => {
       publicKey: "some-public-key",
       privateKey: "some-private-key",
       uploadedAt: "2025-04-10T00:00:00.000Z",
+      lastAccessedAt: "2025-04-10T00:00:00.000Z",
     };
 
     privateKey = "some-private-key";
@@ -111,6 +112,7 @@ describe("FilesService", () => {
         publicKey: "mock-uuid",
         privateKey: "mock-uuid",
         uploadedAt: expect.any(String),
+        lastAccessedAt: expect.any(String),
       });
 
       expect(ipUsageRepo.updateIpUsage).toHaveBeenCalledWith(
