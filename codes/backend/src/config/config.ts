@@ -10,6 +10,12 @@ export const appConfig = registerAs("app", () => ({
   ),
   fileUplaodServiceProvider:
     process.env.FILE_UPLOAD_SERVICE_PROVIDER || "local",
+
+  fileCleanupEnabled: process.env.FILE_CLEANUP_ENABLED === "true",
+  fileCleanupInactivityDays: parseInt(
+    process.env.FILE_CLEANUP_INACTIVITY_DAYS || "30"
+  ),
+  fileCleanupInterval: process.env.FILE_CLEANUP_INTERVAL || "0 0 * * *", // Default to daily at midnight
 }));
 
 export const dbConfig = registerAs("db", () => ({

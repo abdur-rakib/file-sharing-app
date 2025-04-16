@@ -3,6 +3,9 @@ export interface IAppConfig {
   maxUploadBytesPerIp: number;
   maxDownloadBytesPerIp: number;
   fileUplaodServiceProvider?: "local" | "google";
+  fileCleanupEnabled: boolean;
+  fileCleanupInactivityDays: number;
+  fileCleanupInterval: string; // Cron expression
 }
 
 export interface IDBConfig {
