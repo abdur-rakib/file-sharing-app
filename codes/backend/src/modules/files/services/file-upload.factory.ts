@@ -1,20 +1,20 @@
 // file-upload.factory.ts
 import { Injectable } from "@nestjs/common";
-import { LocalFileUploadService } from "./local-file-upload.service";
-import { GoogleFileUploadService } from "./google-file-upload.service";
-import { IFileUploadService } from "../interfaces/files.interface";
+import { LocalFileManageService } from "./local-file-manage.service";
+import { CloudFileManageService } from "./cloud-file-manage.service";
+import { IFileManageService } from "../interfaces/files.interface";
 
 @Injectable()
 export class FileUploadFactory {
   constructor(
-    private readonly localService: LocalFileUploadService,
-    private readonly googleService: GoogleFileUploadService
+    private readonly localService: LocalFileManageService,
+    private readonly cloudService: CloudFileManageService
   ) {}
 
-  getService(provider: "local" | "google"): IFileUploadService {
+  getService(provider: "local" | "google"): IFileManageService {
     switch (provider) {
       case "google":
-        return this.googleService;
+        return this.cloudService;
       case "local":
       default:
         return this.localService;

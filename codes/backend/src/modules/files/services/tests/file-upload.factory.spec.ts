@@ -1,29 +1,29 @@
 import { FileUploadFactory } from "../file-upload.factory";
-import { LocalFileUploadService } from "../local-file-upload.service";
-import { GoogleFileUploadService } from "../google-file-upload.service";
+import { LocalFileManageService } from "../local-file-manage.service";
+import { CloudFileManageService } from "../cloud-file-manage.service";
 
 describe("FileUploadFactory", () => {
   let factory: FileUploadFactory;
-  let localService: LocalFileUploadService;
-  let googleService: GoogleFileUploadService;
+  let localService: LocalFileManageService;
+  let googleService: CloudFileManageService;
 
   beforeEach(() => {
-    localService = {} as LocalFileUploadService;
-    googleService = {} as GoogleFileUploadService;
+    localService = {} as LocalFileManageService;
+    googleService = {} as CloudFileManageService;
     factory = new FileUploadFactory(localService, googleService);
   });
 
-  it('should return LocalFileUploadService when provider is "local"', () => {
+  it('should return LocalFileManageService when provider is "local"', () => {
     const result = factory.getService("local");
     expect(result).toBe(localService);
   });
 
-  it('should return GoogleFileUploadService when provider is "google"', () => {
+  it('should return CloudFileManageService when provider is "google"', () => {
     const result = factory.getService("google");
     expect(result).toBe(googleService);
   });
 
-  it("should return LocalFileUploadService when provider is unknown", () => {
+  it("should return LocalFileManageService when provider is unknown", () => {
     const result = factory.getService("something-wrong" as any);
     expect(result).toBe(localService);
   });

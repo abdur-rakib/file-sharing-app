@@ -1,8 +1,8 @@
-import { LocalFileUploadService } from "../local-file-upload.service";
+import { LocalFileManageService } from "../local-file-manage.service";
 import { FilesService } from "../files.service";
 
-describe("LocalFileUploadService", () => {
-  let service: LocalFileUploadService;
+describe("LocalFileManageService", () => {
+  let service: LocalFileManageService;
   let filesService: jest.Mocked<FilesService>;
 
   beforeEach(() => {
@@ -10,7 +10,7 @@ describe("LocalFileUploadService", () => {
       uploadFile: jest.fn(),
     } as unknown as jest.Mocked<FilesService>;
 
-    service = new LocalFileUploadService(filesService);
+    service = new LocalFileManageService(filesService);
   });
 
   it("should call filesService.uploadFile and return the result", () => {
