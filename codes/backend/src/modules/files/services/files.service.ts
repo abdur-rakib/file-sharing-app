@@ -1,4 +1,6 @@
 import {
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -14,6 +16,7 @@ import { IAppConfig } from "../../../config/config.interface";
 @Injectable()
 export class FilesService {
   constructor(
+    @Inject(forwardRef(() => FileManageFactory))
     private readonly fileManageFactory: FileManageFactory,
     private readonly filesRepo: FilesRepository,
     private readonly ipUsageRepo: IpUsageRepository,
