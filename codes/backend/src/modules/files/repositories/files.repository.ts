@@ -51,4 +51,12 @@ export class FilesRepository {
 
     return file;
   }
+
+  findInactiveFiles(inactivityDays: number) {
+    const queryStatement = this.dbService.connection.prepare(`
+      SELECT * FROM files 
+      WHERE lastAccessedAt < datetime('now', '-' || ? || ' days')
+    `);
+    return queryStatement.all(inactivityDays);
+  }
 }
