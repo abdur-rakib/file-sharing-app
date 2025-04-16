@@ -21,6 +21,7 @@ export class FilesService {
   uploadFile(file: Express.Multer.File, ip: string) {
     const publicKey = uuidv4();
     const privateKey = uuidv4();
+    const now = new Date().toISOString();
 
     // construct the file data object
     // using the file information and the generated keys
@@ -30,8 +31,8 @@ export class FilesService {
       mimetype: file.mimetype,
       publicKey,
       privateKey,
-      uploadedAt: new Date().toISOString(),
-      lastAccessedAt: new Date().toISOString(),
+      uploadedAt: now,
+      lastAccessedAt: now,
     };
 
     // save the file data to the database
