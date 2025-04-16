@@ -1,16 +1,21 @@
 import { LocalFileManageService } from "../local-file-manage.service";
 import { FilesService } from "../files.service";
+import { CustomLogger } from "src/shared/services/custom-logger.service";
 
 describe("LocalFileManageService", () => {
   let service: LocalFileManageService;
   let filesService: jest.Mocked<FilesService>;
+  let customLogger: jest.Mocked<CustomLogger>;
 
   beforeEach(() => {
     filesService = {
       uploadFile: jest.fn(),
     } as unknown as jest.Mocked<FilesService>;
+    customLogger = {
+      uploadFile: jest.fn(),
+    } as unknown as jest.Mocked<CustomLogger>;
 
-    service = new LocalFileManageService(filesService);
+    service = new LocalFileManageService(filesService, customLogger);
   });
 
   it("should call filesService.uploadFile and return the result", () => {

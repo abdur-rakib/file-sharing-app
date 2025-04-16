@@ -5,7 +5,7 @@ import { CloudFileManageService } from "./cloud-file-manage.service";
 import { IFileManageService } from "../interfaces/files.interface";
 
 @Injectable()
-export class FileUploadFactory {
+export class FileManageFactory {
   constructor(
     private readonly localService: LocalFileManageService,
     private readonly cloudService: CloudFileManageService
@@ -16,8 +16,9 @@ export class FileUploadFactory {
       case "google":
         return this.cloudService;
       case "local":
-      default:
         return this.localService;
+      default:
+        return this.localService; // Default to local if no valid provider is found
     }
   }
 }

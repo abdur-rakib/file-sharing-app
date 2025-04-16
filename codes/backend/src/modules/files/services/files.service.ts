@@ -3,24 +3,20 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from "@nestjs/common";
-import * as fs from "fs";
 import { v4 as uuidv4 } from "uuid";
-import { File } from "../../../common/enums/logging-tag.enum";
 import { getToday } from "../../../common/utils/date.utils";
-import { CustomLogger } from "../../../shared/services/custom-logger.service";
 import { FilesRepository } from "../repositories/files.repository";
 import { IpUsageRepository } from "../repositories/ip-usage.repository";
-import { FileUploadFactory } from "./file-upload.factory";
+import { FileManageFactory } from "./file-manage.factory";
 import { ConfigService } from "@nestjs/config";
-import { IAppConfig } from "src/config/config.interface";
+import { IAppConfig } from "../../../config/config.interface";
 
 @Injectable()
 export class FilesService {
   constructor(
+    private readonly fileManageFactory: FileManageFactory,
     private readonly filesRepo: FilesRepository,
     private readonly ipUsageRepo: IpUsageRepository,
-    private readonly logger: CustomLogger,
-    private readonly fileUploadFactory: FileUploadFactory,
     private readonly configService: ConfigService
   ) {}
   uploadFile(file: Express.Multer.File, ip: string) {
@@ -64,7 +60,7 @@ export class FilesService {
     // Delete the actual file from disk/cloud storage
     const provider =
       this.configService.get<IAppConfig>("app").fileUplaodServiceProvider;
-    const fileManageService = this.fileUploadFactory.getService(provider);
+    const fileManageService = this.fileManageFactory.getService(provider);
 
     await fileManageService.delete(file);
 

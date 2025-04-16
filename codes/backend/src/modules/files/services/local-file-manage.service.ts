@@ -8,14 +8,13 @@ import { File } from "../../../common/enums/logging-tag.enum";
 
 @Injectable()
 export class LocalFileManageService implements IFileManageService {
-  constructor(
-    private readonly filesService: FilesService,
-    private readonly logger: CustomLogger
-  ) {}
+  constructor(private readonly logger: CustomLogger) {
+    this.logger.setContext(LocalFileManageService.name);
+  }
   upload(file: Express.Multer.File, ip: string): any {
     // Add any metadata logic or database logging here
-    const fileData = this.filesService.uploadFile(file, ip);
-    return fileData;
+    // const fileData = this.filesService.uploadFile(file, ip);
+    return "fileData";
   }
   delete(file: Express.Multer.File): any {
     // Delete the actual file from disk

@@ -1,16 +1,16 @@
-import { FileUploadFactory } from "../file-upload.factory";
+import { FileManageFactory } from "../file-manage.factory";
 import { LocalFileManageService } from "../local-file-manage.service";
 import { CloudFileManageService } from "../cloud-file-manage.service";
 
-describe("FileUploadFactory", () => {
-  let factory: FileUploadFactory;
+describe("FileManageFactory", () => {
+  let factory: FileManageFactory;
   let localService: LocalFileManageService;
   let googleService: CloudFileManageService;
 
   beforeEach(() => {
     localService = {} as LocalFileManageService;
     googleService = {} as CloudFileManageService;
-    factory = new FileUploadFactory(localService, googleService);
+    factory = new FileManageFactory(localService, googleService);
   });
 
   it('should return LocalFileManageService when provider is "local"', () => {

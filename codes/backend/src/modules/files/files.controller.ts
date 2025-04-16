@@ -30,7 +30,7 @@ import { IControllerResult } from "../../common/interfaces/controller-result.int
 import { fileUploadToDisk } from "../../common/utils/file-upload";
 import { IAppConfig } from "../../config/config.interface";
 import { CustomLogger } from "../../shared/services/custom-logger.service";
-import { FileUploadFactory } from "./services/file-upload.factory";
+import { FileManageFactory } from "./services/file-manage.factory";
 import { FilesService } from "./services/files.service";
 
 @Controller({ path: "files", version: "v1" })
@@ -38,7 +38,7 @@ import { FilesService } from "./services/files.service";
 export class FilesController {
   constructor(
     private readonly filesService: FilesService,
-    private readonly fileUploadFactory: FileUploadFactory,
+    private readonly fileManageFactory: FileManageFactory,
     private readonly configservice: ConfigService,
     private readonly logger: CustomLogger
   ) {
@@ -72,7 +72,7 @@ export class FilesController {
 
     const provider =
       this.configservice.get<IAppConfig>("app").fileUplaodServiceProvider;
-    const fileManageService = this.fileUploadFactory.getService(provider);
+    const fileManageService = this.fileManageFactory.getService(provider);
 
     const data = await fileManageService.upload(file, req.ip);
 
