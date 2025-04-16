@@ -9,7 +9,7 @@ import { ResponseInterceptor } from "./interceptors/response.interceptor";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: false, // Disable the default logger
+    bufferLogs: true,
   });
 
   const contextService = app.get(RequestContextService);
