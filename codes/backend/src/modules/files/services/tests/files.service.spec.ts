@@ -26,7 +26,7 @@ jest.mock("uuid", () => ({
 }));
 
 // Mocking the date utility to return a fixed date
-jest.mock("../../../common/utils/date.utils", () => ({
+jest.mock("../../../../common/utils/date.utils.ts", () => ({
   getToday: jest.fn(() => "2025-04-10"),
 }));
 
