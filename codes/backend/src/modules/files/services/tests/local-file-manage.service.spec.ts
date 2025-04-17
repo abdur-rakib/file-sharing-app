@@ -1,24 +1,26 @@
-import { LocalFileManageService } from "../local-file-manage.service";
-import { FilesService } from "../files.service";
 import { CustomLogger } from "src/shared/services/custom-logger.service";
+import { FileMetadataService } from "../files-metadata.service";
+import { LocalFileManageService } from "../local-file-manage.service";
 
 describe("LocalFileManageService", () => {
   let service: LocalFileManageService;
-  let filesService: jest.Mocked<FilesService>;
+  let fileMetadataService: jest.Mocked<FileMetadataService>;
   let customLogger: jest.Mocked<CustomLogger>;
 
   beforeEach(() => {
-    filesService = {
-      uploadFile: jest.fn(),
-    } as unknown as jest.Mocked<FilesService>;
+    fileMetadataService = {
+      saveFileMetadata: jest.fn(),
+    } as unknown as jest.Mocked<FileMetadataService>;
     customLogger = {
-      uploadFile: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+      setContext: jest.fn(),
     } as unknown as jest.Mocked<CustomLogger>;
 
-    service = new LocalFileManageService(filesService, customLogger);
+    service = new LocalFileManageService(fileMetadataService, customLogger);
   });
 
-  it("should call filesService.uploadFile and return the result", () => {
+  it("should call fileMetadataService.saveFileMetadata and return the result", () => {
     // Arrange
     const mockFile = {
       filename: "test.txt",
@@ -34,14 +36,18 @@ describe("LocalFileManageService", () => {
       publicKey: "mock-uuid",
       privateKey: "mock-uuid",
       uploadedAt: expect.any(String),
+      lastAccessedAt: expect.any(String),
     };
 
     // Act
-    filesService.uploadFile.mockReturnValue(mockResult);
+    fileMetadataService.saveFileMetadata.mockReturnValue(mockResult);
     const result = service.upload(mockFile, ip);
 
     // Assert
-    expect(filesService.uploadFile).toHaveBeenCalledWith(mockFile, ip);
+    expect(fileMetadataService.saveFileMetadata).toHaveBeenCalledWith(
+      mockFile,
+      ip
+    );
     expect(result).toEqual(mockResult);
   });
 });
