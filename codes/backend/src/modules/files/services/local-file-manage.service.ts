@@ -1,28 +1,21 @@
-// local-file-upload.service.ts
-import {
-  forwardRef,
-  Inject,
-  Injectable,
-  InternalServerErrorException,
-} from "@nestjs/common";
-import { IFileManageService } from "../interfaces/files.interface";
-import { FilesService } from "./files.service";
-import { CustomLogger } from "../../../shared/services/custom-logger.service";
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import * as fs from "fs";
 import { File } from "../../../common/enums/logging-tag.enum";
+import { CustomLogger } from "../../../shared/services/custom-logger.service";
+import { IFileManageService } from "../interfaces/files.interface";
+import { FileMetadataService } from "./files-metadata.service";
 
 @Injectable()
 export class LocalFileManageService implements IFileManageService {
   constructor(
-    @Inject(forwardRef(() => FilesService))
-    private readonly filesService: FilesService,
+    private readonly fileMetadataService: FileMetadataService,
     private readonly logger: CustomLogger
   ) {
     this.logger.setContext(LocalFileManageService.name);
   }
   upload(file: Express.Multer.File, ip: string): any {
     // Add any metadata logic or database logging here
-    const fileData = this.filesService.uploadFile(file, ip);
+    const fileData = this.fileMetadataService.saveFileMetadata(file, ip);
     return fileData;
   }
   delete(file: Express.Multer.File): any {

@@ -8,6 +8,7 @@ import { LocalFileManageService } from "./services/local-file-manage.service";
 import { CloudFileManageService } from "./services/cloud-file-manage.service";
 import { FileCleanupService } from "./services/file-cleanup.service";
 import { ScheduleModule } from "@nestjs/schedule";
+import { FileMetadataService } from "./services/files-metadata.service";
 
 @Module({
   controllers: [FilesController],
@@ -20,6 +21,7 @@ import { ScheduleModule } from "@nestjs/schedule";
     IpUsageRepository,
     FileCleanupService,
     FileManageFactory,
+    FileMetadataService,
   ],
 })
 export class FilesModule {}

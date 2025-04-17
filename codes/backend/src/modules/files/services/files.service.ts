@@ -5,13 +5,13 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from "@nestjs/common";
-import { v4 as uuidv4 } from "uuid";
 import { getToday } from "../../../common/utils/date.utils";
 import { FilesRepository } from "../repositories/files.repository";
 import { IpUsageRepository } from "../repositories/ip-usage.repository";
 import { FileManageFactory } from "./file-manage.factory";
 import { ConfigService } from "@nestjs/config";
 import { IAppConfig } from "../../../config/config.interface";
+import { FileMetadataService } from "./files-metadata.service";
 
 @Injectable()
 export class FilesService {
@@ -20,32 +20,14 @@ export class FilesService {
     private readonly fileManageFactory: FileManageFactory,
     private readonly filesRepo: FilesRepository,
     private readonly ipUsageRepo: IpUsageRepository,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly fileMetadataService: FileMetadataService
   ) {}
   uploadFile(file: Express.Multer.File, ip: string) {
-    const publicKey = uuidv4();
-    const privateKey = uuidv4();
-    const now = new Date().toISOString();
-
-    // construct the file data object
-    // using the file information and the generated keys
-    const fileData = {
-      filename: file.filename,
-      path: file.path,
-      mimetype: file.mimetype,
-      publicKey,
-      privateKey,
-      uploadedAt: now,
-      lastAccessedAt: now,
-    };
-
-    // save the file data to the database
-    this.filesRepo.save(fileData);
-
-    // update the IP usage in the database
-    this.updateIpUsage(ip, file.size, true);
-
-    // return the public and private keys
+    const { publicKey, privateKey } = this.fileMetadataService.saveFileMetadata(
+      file,
+      ip
+    );
     return { publicKey, privateKey };
   }
 
