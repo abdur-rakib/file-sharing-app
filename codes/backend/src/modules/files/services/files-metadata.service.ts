@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { getToday } from "src/common/utils/date.utils";
+import { getToday } from "../../../common/utils/date.utils";
 import { v4 as uuidv4 } from "uuid";
 import { FilesRepository } from "../repositories/files.repository";
 import { IpUsageRepository } from "../repositories/ip-usage.repository";

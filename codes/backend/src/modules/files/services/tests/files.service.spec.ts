@@ -1,13 +1,12 @@
+import { NotFoundException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { Test, TestingModule } from "@nestjs/testing";
 import { CustomLogger } from "../../../../shared/services/custom-logger.service";
 import { FilesRepository } from "../../repositories/files.repository";
 import { IpUsageRepository } from "../../repositories/ip-usage.repository";
+import { FileManageFactory } from "../file-manage.factory";
+import { FileMetadataService } from "../files-metadata.service";
 import { FilesService } from "../files.service";
-import {
-  InternalServerErrorException,
-  NotFoundException,
-} from "@nestjs/common";
-import * as fs from "fs";
 
 // Mock better-sqlite3 to prevent real DB calls in tests
 jest.mock("better-sqlite3", () => {
@@ -40,6 +39,7 @@ describe("FilesService", () => {
   let service: FilesService;
   let filesRepo: jest.Mocked<FilesRepository>;
   let ipUsageRepo: jest.Mocked<IpUsageRepository>;
+  let fileMetadataService: jest.Mocked<FileMetadataService>;
 
   let mockFile;
   let privateKey: string;
@@ -64,6 +64,29 @@ describe("FilesService", () => {
           },
         },
         {
+          provide: FileManageFactory,
+          useValue: {
+            getService: jest.fn().mockReturnValue({
+              delete: jest.fn(),
+            }),
+          },
+        },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn().mockReturnValue("local"),
+          },
+        },
+        {
+          provide: FileMetadataService,
+          useValue: {
+            saveFileMetadata: jest.fn().mockReturnValue({
+              publicKey: "mock-uuid",
+              privateKey: "mock-uuid",
+            }),
+          },
+        },
+        {
           provide: CustomLogger,
           useValue: {
             log: jest.fn(),
@@ -77,6 +100,7 @@ describe("FilesService", () => {
     service = module.get<FilesService>(FilesService);
     filesRepo = module.get(FilesRepository);
     ipUsageRepo = module.get(IpUsageRepository);
+    fileMetadataService = module.get(FileMetadataService);
 
     mockFile = {
       filename: "test.txt",
@@ -95,7 +119,7 @@ describe("FilesService", () => {
   });
 
   describe("uploadFile", () => {
-    it("should save file and update IP usage", () => {
+    it("should call fileMetadataService.saveFileMetadata", () => {
       const file = {
         filename: "test.txt",
         path: "uploads/test.txt",
@@ -105,23 +129,10 @@ describe("FilesService", () => {
 
       const result = service.uploadFile(file, "127.0.0.1");
 
-      expect(filesRepo.save).toHaveBeenCalledWith({
-        filename: "test.txt",
-        path: "uploads/test.txt",
-        mimetype: "text/plain",
-        publicKey: "mock-uuid",
-        privateKey: "mock-uuid",
-        uploadedAt: expect.any(String),
-        lastAccessedAt: expect.any(String),
-      });
-
-      expect(ipUsageRepo.updateIpUsage).toHaveBeenCalledWith(
-        "127.0.0.1",
-        1234,
-        true,
-        "2025-04-10"
+      expect(fileMetadataService.saveFileMetadata).toHaveBeenCalledWith(
+        file,
+        "127.0.0.1"
       );
-
       expect(result).toEqual({
         publicKey: "mock-uuid",
         privateKey: "mock-uuid",
@@ -139,58 +150,22 @@ describe("FilesService", () => {
       expect(filesRepo.findByPublicKey).toHaveBeenCalledWith("some-public-key");
     });
   });
-
   describe("deleteFileByPrivateKey", () => {
-    it("should delete file by private key and remove metadata", () => {
+    it("should delete file by private key and remove metadata", async () => {
       // Arrange
       filesRepo.findByPrivateKey.mockReturnValue(mockFile);
-      (fs.existsSync as jest.Mock).mockReturnValue(true); // File exists
 
       // Act
-      service.deleteFileByPrivateKey(privateKey);
+      await service.deleteFileByPrivateKey(privateKey);
 
       // Assert
       expect(filesRepo.deleteByPrivateKey).toHaveBeenCalledWith(privateKey);
-      expect(fs.unlinkSync).toHaveBeenCalledWith(mockFile.path);
     });
 
-    it("should log a warning if file does not exist during deletion", () => {
-      // Arrange
-      filesRepo.findByPrivateKey.mockReturnValue(mockFile);
-      (fs.existsSync as jest.Mock).mockReturnValue(false); // File does not exist
+    it("should throw NotFoundException if file not found", async () => {
+      filesRepo.findByPrivateKey.mockReturnValue(undefined);
 
-      // Act
-      service.deleteFileByPrivateKey(privateKey);
-
-      // Assert
-      expect(filesRepo.deleteByPrivateKey).toHaveBeenCalledWith(privateKey);
-      expect(fs.unlinkSync).not.toHaveBeenCalled(); // unlink should not be called if file doesn't exist
-      expect(service["logger"].warn).toHaveBeenCalledWith(
-        "DELETE_FILE",
-        `File at path "uploads/test.txt" not found during deletion`
-      );
-    });
-
-    it("should throw InternalServerErrorException if deletion fails", () => {
-      // Arrange
-      filesRepo.findByPrivateKey.mockReturnValue(mockFile);
-      (fs.existsSync as jest.Mock).mockReturnValue(true); // File exists
-      (fs.unlinkSync as jest.Mock).mockImplementation(() => {
-        throw new Error("File deletion failed");
-      });
-
-      // Act & Assert
-      expect(() => service.deleteFileByPrivateKey(privateKey)).toThrow(
-        InternalServerErrorException
-      );
-    });
-
-    it("should throw NotFoundException if file is not found", () => {
-      // Arrange
-      filesRepo.findByPrivateKey.mockReturnValue(undefined); // File not found
-
-      // Act & Assert
-      expect(() => service.deleteFileByPrivateKey(privateKey)).toThrow(
+      await expect(service.deleteFileByPrivateKey(privateKey)).rejects.toThrow(
         NotFoundException
       );
     });
