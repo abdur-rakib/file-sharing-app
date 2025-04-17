@@ -5,7 +5,7 @@ import { FilesRepository } from "../repositories/files.repository";
 import { FilesService } from "./files.service";
 import { CustomLogger } from "../../../shared/services/custom-logger.service";
 import { File } from "../../../common/enums/logging-tag.enum";
-import { IAppConfig } from "src/config/config.interface";
+import { IFileConfig } from "src/config/config.interface";
 
 @Injectable()
 export class FileCleanupService {
@@ -20,7 +20,7 @@ export class FileCleanupService {
 
   @Cron(process.env.FILE_CLEANUP_SCHEDULE)
   async cleanupInactiveFiles() {
-    const config = this.configService.get<IAppConfig>("app");
+    const config = this.configService.get<IFileConfig>("file");
 
     if (!config.fileCleanupEnabled) {
       return;

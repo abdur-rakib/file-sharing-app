@@ -28,7 +28,7 @@ import * as path from "path";
 import { File } from "../../common/enums/logging-tag.enum";
 import { IControllerResult } from "../../common/interfaces/controller-result.interface";
 import { fileUploadToDisk } from "../../common/utils/file-upload";
-import { IAppConfig } from "../../config/config.interface";
+import { IFileConfig } from "../../config/config.interface";
 import { CustomLogger } from "../../shared/services/custom-logger.service";
 import { FileManageFactory } from "./services/file-manage.factory";
 import { FilesService } from "./services/files.service";
@@ -71,7 +71,7 @@ export class FilesController {
     }
 
     const provider =
-      this.configservice.get<IAppConfig>("app").fileUplaodServiceProvider;
+      this.configservice.get<IFileConfig>("file").fileUplaodServiceProvider;
     const fileManageService = this.fileManageFactory.getService(provider);
 
     const data = await fileManageService.upload(file, req.ip);

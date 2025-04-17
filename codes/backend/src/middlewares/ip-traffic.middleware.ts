@@ -1,7 +1,7 @@
 import { Injectable, NestMiddleware, ForbiddenException } from "@nestjs/common";
 import { Request, Response, NextFunction } from "express";
 import { ConfigService } from "@nestjs/config";
-import { IAppConfig } from "../config/config.interface";
+import { IFileConfig } from "../config/config.interface";
 import { IpUsageRepository } from "../modules/files/repositories/ip-usage.repository";
 import { getToday } from "../common/utils/date.utils";
 
@@ -29,7 +29,7 @@ export class IpTrafficMiddleware implements NestMiddleware {
     let usage = this.ipUsageRepo.getIpUsage(ip, today);
 
     const { maxDownloadBytesPerIp, maxUploadBytesPerIp } =
-      this.configService.get<IAppConfig>("app");
+      this.configService.get<IFileConfig>("file");
 
     const maxLimit = isUpload ? maxUploadBytesPerIp : maxDownloadBytesPerIp;
 

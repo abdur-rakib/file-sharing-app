@@ -1,4 +1,4 @@
-export interface IAppConfig {
+export interface IFileConfig {
   fileUploadPath: string;
   maxUploadBytesPerIp: number;
   maxDownloadBytesPerIp: number;

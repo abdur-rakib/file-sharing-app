@@ -2,7 +2,7 @@ import { MiddlewareConsumer, Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
-import { appConfig, dbConfig } from "./config/config";
+import { fileConfig, dbConfig } from "./config/config";
 import { HttpLoggerMiddleware } from "./middlewares/http-logger.middleware";
 import { IpTrafficMiddleware } from "./middlewares/ip-traffic.middleware";
 import { RequestIdMiddleware } from "./middlewares/request-id.middleware";
@@ -16,7 +16,7 @@ import { SharedModule } from "./shared/shared.module";
     FilesModule,
     ConfigModule.forRoot({
       isGlobal: true, // Makes the config module available globally
-      load: [appConfig, dbConfig], // Load custom configuration files
+      load: [fileConfig, dbConfig], // Load custom configuration files
     }),
   ],
   controllers: [AppController],

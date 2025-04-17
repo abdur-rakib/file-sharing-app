@@ -10,7 +10,7 @@ import { FilesRepository } from "../repositories/files.repository";
 import { IpUsageRepository } from "../repositories/ip-usage.repository";
 import { FileManageFactory } from "./file-manage.factory";
 import { ConfigService } from "@nestjs/config";
-import { IAppConfig } from "../../../config/config.interface";
+import { IFileConfig } from "../../../config/config.interface";
 import { FileMetadataService } from "./files-metadata.service";
 
 @Injectable()
@@ -44,7 +44,7 @@ export class FilesService {
 
     // Delete the actual file from disk/cloud storage
     const provider =
-      this.configService.get<IAppConfig>("app").fileUplaodServiceProvider;
+      this.configService.get<IFileConfig>("file").fileUplaodServiceProvider;
     const fileManageService = this.fileManageFactory.getService(provider);
 
     await fileManageService.delete(file);

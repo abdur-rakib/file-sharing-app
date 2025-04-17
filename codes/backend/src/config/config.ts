@@ -1,6 +1,6 @@
 import { registerAs } from "@nestjs/config";
 
-export const appConfig = registerAs("app", () => ({
+export const fileConfig = registerAs("file", () => ({
   fileUploadPath: process.env.FILE_UPLOAD_PATH || "./uploads",
   maxUploadBytesPerIp: parseInt(
     process.env.MAX_UPLOAD_BYTES_PER_IP || "524288"
