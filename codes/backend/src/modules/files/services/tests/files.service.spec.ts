@@ -128,23 +128,21 @@ describe("FilesService", () => {
     });
   });
   describe("deleteFileByPrivateKey", () => {
-    it("should delete file by private key and remove metadata", async () => {
+    it("should delete file by private key and remove metadata", () => {
       // Arrange
       filesRepo.findByPrivateKey.mockReturnValue(mockFile);
 
       // Act
-      await service.deleteFileByPrivateKey(privateKey);
+      service.deleteFileByPrivateKey(privateKey);
 
       // Assert
       expect(filesRepo.deleteByPrivateKey).toHaveBeenCalledWith(privateKey);
     });
 
-    it("should throw NotFoundException if file not found", async () => {
+    it("should throw null if file not found", () => {
       filesRepo.findByPrivateKey.mockReturnValue(undefined);
 
-      await expect(service.deleteFileByPrivateKey(privateKey)).rejects.toThrow(
-        NotFoundException
-      );
+      expect(service.deleteFileByPrivateKey(privateKey)).toEqual(null);
     });
   });
 
