@@ -1,6 +1,6 @@
 # File Sharing Application
 
-A modern and secure file sharing application built with NestJS backend, featuring Docker containerization, SQLite database, and file upload, download and delete support.
+A modern and secure file sharing application built with NestJS backend, featuring Docker containerization, SQLite database, and automated file cleanup.
 
 ## Project Structure
 
@@ -8,19 +8,16 @@ A modern and secure file sharing application built with NestJS backend, featurin
 file-sharing-app/
 ├── codes/
 │   └── backend/         # NestJS backend application
-│       ├── src/        # Source code
+│       ├── src/
 │       │   ├── modules/    # Feature modules
 │       │   ├── common/     # Shared utilities, interfaces
 │       │   ├── config/     # Configuration
-│       │   ├── interceptors/     # Custom Interceptors
-│       │   ├── filters/     # Custom Filters
-│       │   └── middlewares/# Custom middlewares
+│       │   ├── database/   # Database service
+│       │   ├── filters/    # Exception filters
+│       │   ├── interceptors/ # Response interceptors
+│       │   └── middlewares/ # Custom middlewares
 │       └── test/       # Test files
 ├── docker/             # Docker configuration files
-│   ├── backend/        # Backend-specific docker files
-│   ├── docker-compose.yml        # Main docker compose file
-│   ├── docker-compose.override.yml # Local development overrides
-│   └── .envs/         # Environment configurations
 └── README.md
 ```
 
@@ -35,40 +32,65 @@ file-sharing-app/
 
 ### Backend (NestJS)
 
-- File Upload/Download/Delete System
-  - Local file storage support
-  - Google Cloud Storage support (configurable)
-  - File size tracking
+- File Management
+
+  - Local/Cloud storage support
+  - Automated cleanup of inactive files
+  - File metadata tracking
+  - Configurable cleanup schedule
+  - Public/Private key system
+
+- Security & Rate Limiting
+
   - IP-based upload/download limits
-  - User can delete files
-- Database
-  - SQLite with better-sqlite3
-  - File metadata storage
-  - IP usage tracking
+  - Request tracking per IP
+  - Daily bandwidth limits
+  - Secure file access control
+
+- Monitoring & Logging
+
+  - Request tracing with unique IDs
+  - Structured JSON logging
+  - HTTP request logging
+  - Database operation logging
+
 - API Features
-  - RESTful endpoints with versioning
-  - Swagger API documentation
-  - Request logging
+  - OpenAPI/Swagger documentation
+  - API versioning
   - Custom response formatting
   - Global error handling
-- Security
-  - IP-based rate limiting
-  - File size restrictions (Not imeplemented yet)
-  - Secure file access via public/private keys
-- Monitoring
-  - Custom logging system
-  - Request tracing with request IDs
-  - HTTP request logging
+  - Request validation
 
-### Docker Support
+### Environment Variables
 
-- Multi-stage builds (`dev`/`prod`)
-- Volume mounting for development
-- Environment configuration
+#### Docker Configuration
 
-## Getting Started
+```env
+COMPOSE_PROJECT_NAME=file-sharing-api
+DOCKER_BUILD_MODE=dev
+BACKEND_HTTP_PUBLISH_PORT=9505
+TIMEZONE=Asia/Dhaka
+```
 
-### Environment Setup
+#### Backend Configuration
+
+```env
+# File Management
+FILE_UPLOAD_PATH=./uploads
+FILE_UPLOAD_SERVICE_PROVIDER=local
+MAX_UPLOAD_BYTES_PER_IP=524288000
+MAX_DOWNLOAD_BYTES_PER_IP=524288000
+
+# Database
+DB_RELATIVE_PATH=./data/files.db
+
+# File Cleanup
+FILE_CLEANUP_ENABLED=true
+FILE_CLEANUP_INACTIVITY_DAYS=7
+FILE_CLEANUP_SCHEDULE="0 0 * * *"
+```
+
+### Development
 
 1. Clone and setup:
 
@@ -85,41 +107,23 @@ cp docker/docker-compose.override.example.yml docker/docker-compose.override.yml
 cp docker/.envs/backend.example.env docker/.envs/backend.env
 ```
 
-3. Environment Variables:
-
-- Docker Environment:
-
-  - `COMPOSE_PROJECT_NAME`: Project name for Docker
-  - `DOCKER_BUILD_MODE`: Build target (`dev`/`prod`)
-  - `BACKEND_HTTP_PUBLISH_PORT`: API port (default: 9505)
-  - `TIMEZONE`: Container timezone
-
-- Backend Environment:
-  - `FILE_UPLOAD_PATH`: Upload directory path
-  - `MAX_UPLOAD_BYTES_PER_IP`: Upload limit per IP in bytes
-  - `MAX_DOWNLOAD_BYTES_PER_IP`: Download limit per IP in bytes
-  - `FILE_UPLOAD_SERVICE_PROVIDER`: Storage provider (`local`/`google`)
-  - `DB_RELATIVE_PATH`: SQLite database path
-
-### Development
-
-1. Start the development server:
+3. Start development server:
 
 ```bash
 cd docker
 docker-compose up backend
 ```
 
-2. Access points:
+### API Documentation
 
-- API: `http://localhost:9505/api/v1`
-- Swagger Docs: `http://localhost:9505/api-docs`
+Access Swagger UI: `http://localhost:9505/api-docs`
 
-### API Endpoints
+#### Endpoints
 
-- `POST /api/v1/files` - Upload file
-- `GET /api/v1/files/:publicKey` - Download file
-- `DELETE /api/v1/files/:privateKey` - Delete file
+- **Files**
+  - `POST /api/v1/files` - Upload file
+  - `GET /api/v1/files/:publicKey` - Download file
+  - `DELETE /api/v1/files/:privateKey` - Delete file
 
 ### Testing
 
@@ -148,8 +152,6 @@ npm run test:cov
 MIT License - see [LICENSE](LICENSE) file
 
 ## Support
-
-For support:
 
 - Create an issue in the repository
 - Email: abdurrakib961@gmail.com
