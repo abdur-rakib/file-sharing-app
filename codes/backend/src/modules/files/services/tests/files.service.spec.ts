@@ -117,29 +117,6 @@ describe("FilesService", () => {
 
     jest.clearAllMocks();
   });
-
-  describe("uploadFile", () => {
-    it("should call fileMetadataService.saveFileMetadata", () => {
-      const file = {
-        filename: "test.txt",
-        path: "uploads/test.txt",
-        mimetype: "text/plain",
-        size: 1234,
-      } as Express.Multer.File;
-
-      const result = service.uploadFile(file, "127.0.0.1");
-
-      expect(fileMetadataService.saveFileMetadata).toHaveBeenCalledWith(
-        file,
-        "127.0.0.1"
-      );
-      expect(result).toEqual({
-        publicKey: "mock-uuid",
-        privateKey: "mock-uuid",
-      });
-    });
-  });
-
   describe("getFileByPublicKey", () => {
     it("should return file by public key", () => {
       filesRepo.findByPublicKey.mockReturnValue(mockFile);

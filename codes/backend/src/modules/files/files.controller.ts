@@ -74,11 +74,14 @@ export class FilesController {
       this.configservice.get<IFileConfig>("file").fileUplaodServiceProvider;
     const fileManageService = this.fileManageFactory.getService(provider);
 
-    const data = await fileManageService.upload(file, req.ip);
+    const { publicKey, privateKey } = await fileManageService.upload(
+      file,
+      req.ip
+    );
 
     return {
       message: "File uploaded successfully",
-      data,
+      data: { publicKey, privateKey },
     };
   }
 

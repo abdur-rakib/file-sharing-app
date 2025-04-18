@@ -11,7 +11,6 @@ import { IpUsageRepository } from "../repositories/ip-usage.repository";
 import { FileManageFactory } from "./file-manage.factory";
 import { ConfigService } from "@nestjs/config";
 import { IFileConfig } from "../../../config/config.interface";
-import { FileMetadataService } from "./files-metadata.service";
 
 @Injectable()
 export class FilesService {
@@ -20,16 +19,8 @@ export class FilesService {
     private readonly fileManageFactory: FileManageFactory,
     private readonly filesRepo: FilesRepository,
     private readonly ipUsageRepo: IpUsageRepository,
-    private readonly configService: ConfigService,
-    private readonly fileMetadataService: FileMetadataService
+    private readonly configService: ConfigService
   ) {}
-  uploadFile(file: Express.Multer.File, ip: string) {
-    const { publicKey, privateKey } = this.fileMetadataService.saveFileMetadata(
-      file,
-      ip
-    );
-    return { publicKey, privateKey };
-  }
 
   getFileByPublicKey(publicKey: string) {
     return this.filesRepo.findByPublicKey(publicKey);
