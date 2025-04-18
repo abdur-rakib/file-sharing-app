@@ -26,11 +26,11 @@ export class FilesService {
     return this.filesRepo.findByPublicKey(publicKey);
   }
 
-  async deleteFileByPrivateKey(privateKey: string) {
+  deleteFileByPrivateKey(privateKey: string) {
     // Find the file metadata
     const file = this.filesRepo.findByPrivateKey(privateKey);
     if (!file) {
-      throw new NotFoundException("File not found");
+      return null;
     }
 
     // Delete the actual file from disk/cloud storage
@@ -38,7 +38,7 @@ export class FilesService {
       this.configService.get<IFileConfig>("file").fileUplaodServiceProvider;
     const fileManageService = this.fileManageFactory.getService(provider);
 
-    await fileManageService.delete(file);
+    fileManageService.delete(file);
 
     // Delete metadata from DB
     return this.filesRepo.deleteByPrivateKey(privateKey);

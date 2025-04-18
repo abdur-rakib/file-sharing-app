@@ -168,7 +168,10 @@ export class FilesController {
     });
     // Check if the file exists in the database
     const deleted = this.filesService.deleteFileByPrivateKey(privateKey);
-    if (!deleted) throw new NotFoundException("File not found");
+    console.log("🚀 ~ FilesController ~ remove ~ deleted:", deleted);
+    if (!deleted) {
+      throw new NotFoundException("File not found");
+    }
 
     return { message: "File deleted successfully" };
   }

@@ -52,7 +52,6 @@ file-sharing-app/
   - Request tracing with unique IDs
   - Structured JSON logging
   - HTTP request logging
-  - Database operation logging
 
 - API Features
   - OpenAPI/Swagger documentation
