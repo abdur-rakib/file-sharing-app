@@ -8,7 +8,7 @@ services:
       - ../codes/backend:/home/appuser/appsrc
       - backend_node_modules:/home/appuser/appsrc/node_modules
     ports:
-      - ${BACKEND_HTTP_PUBLISH_PORT}:3000
+      - ${PORT}:3000
 
 volumes:
   backend_node_modules:

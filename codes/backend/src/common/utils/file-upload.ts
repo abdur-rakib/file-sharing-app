@@ -7,7 +7,7 @@ export function fileUploadToDisk() {
     storage: diskStorage({
       destination: (req, file, cb) => {
         const uploadPath =
-          process.env.FILE_UPLOAD_PATH || path.join(process.cwd(), "uploads");
+          process.env.FOLDER || path.join(process.cwd(), "uploads");
 
         if (!fs.existsSync(uploadPath)) {
           fs.mkdirSync(uploadPath, { recursive: true });
