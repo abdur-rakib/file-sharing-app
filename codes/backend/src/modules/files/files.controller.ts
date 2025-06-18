@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  InternalServerErrorException,
   NotFoundException,
   Param,
   Post,
@@ -23,7 +24,7 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { Request, Response } from "express";
-import * as fs from "fs";
+import { promises as fsPromises } from "fs";
 import * as path from "path";
 import { File } from "../../common/enums/logging-tag.enum";
 import { IControllerResult } from "../../common/interfaces/controller-result.interface";
@@ -39,7 +40,7 @@ export class FilesController {
   constructor(
     private readonly filesService: FilesService,
     private readonly fileManageFactory: FileManageFactory,
-    private readonly configservice: ConfigService,
+    private readonly configService: ConfigService,
     private readonly logger: CustomLogger
   ) {
     logger.setContext(FilesController.name);
@@ -71,7 +72,7 @@ export class FilesController {
     }
 
     const provider =
-      this.configservice.get<IFileConfig>("file").fileUplaodServiceProvider;
+      this.configService.get<IFileConfig>("file").fileUplaodServiceProvider;
     const fileManageService = this.fileManageFactory.getService(provider);
 
     const { publicKey, privateKey } = await fileManageService.upload(
@@ -120,33 +121,89 @@ export class FilesController {
     @Res() res: Response,
     @Req() req: Request
   ): Promise<void> {
-    const file = await this.filesService.getFileByPublicKey(publicKey);
     this.logger.log(File.DOWNLOAD_FILE, "Download file request initialized", {
-      file,
       publicKey,
     });
+
+    let file;
+    try {
+      file = await this.filesService.getFileByPublicKey(publicKey);
+    } catch (error) {
+      this.logger.error(
+        File.DOWNLOAD_FILE,
+        `Error retrieving file: ${publicKey}`,
+        error
+      );
+      throw new InternalServerErrorException("Failed to retrieve file");
+    }
+
     if (!file) {
       throw new NotFoundException("File not found");
     }
 
-    // Check if the file exists on disk
-    const filePath = path.resolve(file.path);
-    if (!fs.existsSync(filePath)) {
-      throw new NotFoundException("File not found on disk");
+    // Normalize and validate the file path for security
+    const normalizedPath = path.normalize(file.path);
+    const resolvedPath = path.resolve(normalizedPath);
+    try {
+      // Verify file exists using async call
+      await fsPromises.access(resolvedPath);
+
+      // Update the IP usage in the database
+      this.filesService.updateIpUsage(req.ip, file.size, false);
+
+      // Set response headers
+      res.set({
+        "Content-Type": file.mimetype,
+        "Content-Disposition": `attachment; filename="${encodeURIComponent(file.filename)}"`,
+        "Content-Length": file.size,
+      });
+
+      // Stream the file to the response
+      const { createReadStream } = await import("fs");
+      const fileStream = createReadStream(resolvedPath);
+
+      // Handle stream errors
+      fileStream.on("error", (err) => {
+        this.logger.error(
+          File.DOWNLOAD_FILE,
+          `Error streaming file: ${resolvedPath}`,
+          err
+        );
+        // Only send error if headers haven't been sent
+        if (!res.headersSent) {
+          res.status(500).json({
+            status: "failed",
+            code: 500,
+            message: "Error streaming file",
+          });
+        } else {
+          res.end();
+        }
+      });
+
+      // Handle request close/abort to clean up resources
+      req.on("close", () => {
+        fileStream.destroy();
+      });
+
+      // Pipe stream to response
+      fileStream.pipe(res);
+    } catch (error) {
+      if (error.code === "ENOENT") {
+        this.logger.log(
+          File.DOWNLOAD_FILE,
+          `File not found on disk: ${resolvedPath}`
+        );
+        throw new NotFoundException("File not found on disk");
+      } else {
+        this.logger.error(
+          File.DOWNLOAD_FILE,
+          `Error accessing file: ${resolvedPath}`,
+          error
+        );
+        throw new InternalServerErrorException("Failed to access file");
+      }
     }
-
-    // update the IP usage in the database
-    this.filesService.updateIpUsage(req.ip, file.size, false);
-
-    // Set the headers for the response
-    res.set({
-      "Content-Type": file.mimetype,
-      "Content-Disposition": `attachment; filename="${file.filename}"`,
-    });
-
-    // Create a read stream and pipe it to the response
-    const fileStream = fs.createReadStream(filePath);
-    fileStream.pipe(res);
   }
 
   @Delete(":privateKey")
@@ -162,16 +219,33 @@ export class FilesController {
       },
     },
   })
-  remove(@Param("privateKey") privateKey: string): IControllerResult {
+  async remove(
+    @Param("privateKey") privateKey: string
+  ): Promise<IControllerResult> {
     this.logger.log(File.DELETE_FILE, "Delete file request initialized", {
       privateKey,
     });
-    // Check if the file exists in the database
-    const deleted = this.filesService.deleteFileByPrivateKey(privateKey);
-    if (!deleted) {
-      throw new NotFoundException("File not found");
-    }
 
-    return { message: "File deleted successfully" };
+    try {
+      // Check if the file exists and delete it
+      const deleted =
+        await this.filesService.deleteFileByPrivateKey(privateKey);
+      if (!deleted) {
+        throw new NotFoundException("File not found");
+      }
+
+      return { message: "File deleted successfully" };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      this.logger.error(
+        File.DELETE_FILE,
+        `Error deleting file with privateKey: ${privateKey}`,
+        error
+      );
+      throw new InternalServerErrorException("Failed to delete file");
+    }
   }
 }
