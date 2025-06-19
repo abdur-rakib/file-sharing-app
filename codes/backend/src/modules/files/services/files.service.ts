@@ -1,32 +1,41 @@
-import {
-  forwardRef,
-  Inject,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { getToday } from "../../../common/utils/date.utils";
+import { IFileConfig } from "../../../config/config.interface";
 import { FilesRepository } from "../repositories/files.repository";
 import { IpUsageRepository } from "../repositories/ip-usage.repository";
-import { FileManageFactory } from "./file-manage.factory";
-import { ConfigService } from "@nestjs/config";
-import { IFileConfig } from "../../../config/config.interface";
+import { FileStorageFactory } from "./file-storage.factory";
+import { FileMetadataService } from "./files-metadata.service";
 
 @Injectable()
 export class FilesService {
   constructor(
-    @Inject(forwardRef(() => FileManageFactory))
-    private readonly fileManageFactory: FileManageFactory,
+    @Inject(forwardRef(() => FileStorageFactory))
+    private readonly fileStorageFactory: FileStorageFactory,
     private readonly filesRepo: FilesRepository,
     private readonly ipUsageRepo: IpUsageRepository,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly fileMetadataService: FileMetadataService
   ) {}
+
+  async saveFile(file: Express.Multer.File, ip: string) {
+    // get the file storage provider
+    const provider =
+      this.configService.get<IFileConfig>("file").fileUplaodServiceProvider;
+    const fileStorageService = this.fileStorageFactory.getService(provider);
+    // save file to disk storage
+    await fileStorageService.saveFile(file);
+
+    // Save file metadata to the database
+    const fileMetadata = this.fileMetadataService.saveFileMetadata(file, ip);
+    return fileMetadata;
+  }
 
   getFileByPublicKey(publicKey: string) {
     return this.filesRepo.findByPublicKey(publicKey);
   }
 
-  deleteFileByPrivateKey(privateKey: string) {
+  async deleteFileByPrivateKey(privateKey: string) {
     // Find the file metadata
     const file = this.filesRepo.findByPrivateKey(privateKey);
     if (!file) {
@@ -36,9 +45,9 @@ export class FilesService {
     // Delete the actual file from disk/cloud storage
     const provider =
       this.configService.get<IFileConfig>("file").fileUplaodServiceProvider;
-    const fileManageService = this.fileManageFactory.getService(provider);
+    const fileStorageService = this.fileStorageFactory.getService(provider);
 
-    fileManageService.delete(file);
+    await fileStorageService.deleteFile(file.path);
 
     // Delete metadata from DB
     return this.filesRepo.deleteByPrivateKey(privateKey);

@@ -4,7 +4,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { CustomLogger } from "../../../../shared/services/custom-logger.service";
 import { FilesRepository } from "../../repositories/files.repository";
 import { IpUsageRepository } from "../../repositories/ip-usage.repository";
-import { FileManageFactory } from "../file-manage.factory";
+import { FileManageFactory } from "../file-storage.factory";
 import { FileMetadataService } from "../files-metadata.service";
 import { FilesService } from "../files.service";
 

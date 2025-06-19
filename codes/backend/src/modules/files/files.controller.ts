@@ -31,7 +31,7 @@ import { IControllerResult } from "../../common/interfaces/controller-result.int
 import { fileUploadToDisk } from "../../common/utils/file-upload";
 import { IFileConfig } from "../../config/config.interface";
 import { CustomLogger } from "../../shared/services/custom-logger.service";
-import { FileManageFactory } from "./services/file-manage.factory";
+import { FileStorageFactory } from "./services/file-storage.factory";
 import { FilesService } from "./services/files.service";
 
 @Controller({ path: "files", version: "v1" })
@@ -39,7 +39,7 @@ import { FilesService } from "./services/files.service";
 export class FilesController {
   constructor(
     private readonly filesService: FilesService,
-    private readonly fileManageFactory: FileManageFactory,
+    private readonly fileStorageFactory: FileStorageFactory,
     private readonly configService: ConfigService,
     private readonly logger: CustomLogger
   ) {
@@ -71,11 +71,7 @@ export class FilesController {
       throw new BadRequestException("File is required");
     }
 
-    const provider =
-      this.configService.get<IFileConfig>("file").fileUplaodServiceProvider;
-    const fileManageService = this.fileManageFactory.getService(provider);
-
-    const { publicKey, privateKey } = await fileManageService.upload(
+    const { publicKey, privateKey } = await this.filesService.saveFile(
       file,
       req.ip
     );

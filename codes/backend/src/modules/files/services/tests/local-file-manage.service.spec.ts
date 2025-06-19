@@ -1,6 +1,6 @@
 import { CustomLogger } from "src/shared/services/custom-logger.service";
 import { FileMetadataService } from "../files-metadata.service";
-import { LocalFileManageService } from "../local-file-manage.service";
+import { LocalFileManageService } from "../local-file-storage.service";
 
 describe("LocalFileManageService", () => {
   let service: LocalFileManageService;

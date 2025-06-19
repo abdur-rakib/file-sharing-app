@@ -1,6 +1,6 @@
-import { FileManageFactory } from "../file-manage.factory";
-import { LocalFileManageService } from "../local-file-manage.service";
-import { CloudFileManageService } from "../cloud-file-manage.service";
+import { FileManageFactory } from "../file-storage.factory";
+import { LocalFileManageService } from "../local-file-storage.service";
+import { CloudFileManageService } from "../google-storage.service";
 
 describe("FileManageFactory", () => {
   let factory: FileManageFactory;
