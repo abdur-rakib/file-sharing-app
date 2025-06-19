@@ -6,9 +6,9 @@ import * as path from "path";
 import { CustomLogger } from "../../../shared/services/custom-logger.service";
 import { File } from "../../../common/enums/logging-tag.enum";
 import {
-  IStorageProvider,
-  IStorageFile,
   IFileResponse,
+  IStorageFile,
+  IStorageProvider,
 } from "../interfaces/storage.interface";
 
 @Injectable()
@@ -139,7 +139,6 @@ export class LocalStorageProvider implements IStorageProvider {
    * @returns Whether deletion was successful
    */
   async deleteFile(filePath: string): Promise<boolean> {
-    console.log("🚀 ~ LocalStorageProvider ~ deleteFile ~ filePath:", filePath);
     try {
       // Normalize and validate path
       const normalizedPath = path.normalize(filePath);

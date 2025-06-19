@@ -6,21 +6,17 @@ import { IpUsageRepository } from "./repositories/ip-usage.repository";
 import { FileCleanupService } from "./services/file-cleanup.service";
 import { ScheduleModule } from "@nestjs/schedule";
 import { FileMetadataService } from "./services/files-metadata.service";
-import { LocalStorageProvider } from "./services/local-file-storage.service";
-// import { GoogleStorageProvider } from "./services/google-storage.service";
-import { FileStorageFactory } from "./services/file-storage.factory";
+import { StorageModule } from "../storage/storage.module";
+import { StorageService } from "../storage/storage.service";
 
 @Module({
   controllers: [FilesController],
-  imports: [ScheduleModule.forRoot()],
+  imports: [ScheduleModule.forRoot(), StorageModule],
   providers: [
-    LocalStorageProvider,
-    // GoogleStorageProvider,
     FilesService,
     FilesRepository,
     IpUsageRepository,
     FileCleanupService,
-    FileStorageFactory,
     FileMetadataService,
   ],
 })

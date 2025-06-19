@@ -9,6 +9,7 @@ import { RequestIdMiddleware } from "./middlewares/request-id.middleware";
 import { FilesModule } from "./modules/files/files.module";
 import { IpUsageRepository } from "./modules/files/repositories/ip-usage.repository";
 import { SharedModule } from "./shared/shared.module";
+import { StorageModule } from "./modules/storage/storage.module";
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { SharedModule } from "./shared/shared.module";
       isGlobal: true, // Makes the config module available globally
       load: [fileConfig, dbConfig], // Load custom configuration files
     }),
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [AppService, IpUsageRepository],

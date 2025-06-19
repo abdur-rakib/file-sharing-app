@@ -29,9 +29,7 @@ import * as path from "path";
 import { File } from "../../common/enums/logging-tag.enum";
 import { IControllerResult } from "../../common/interfaces/controller-result.interface";
 import { fileUploadToDisk } from "../../common/utils/file-upload";
-import { IFileConfig } from "../../config/config.interface";
 import { CustomLogger } from "../../shared/services/custom-logger.service";
-import { FileStorageFactory } from "./services/file-storage.factory";
 import { FilesService } from "./services/files.service";
 
 @Controller({ path: "files", version: "v1" })
@@ -39,7 +37,6 @@ import { FilesService } from "./services/files.service";
 export class FilesController {
   constructor(
     private readonly filesService: FilesService,
-    private readonly fileStorageFactory: FileStorageFactory,
     private readonly configService: ConfigService,
     private readonly logger: CustomLogger
   ) {
