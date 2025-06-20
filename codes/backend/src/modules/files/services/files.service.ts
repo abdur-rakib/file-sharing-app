@@ -15,10 +15,13 @@ export class FilesService {
   ) {}
 
   async saveFile(file: Express.Multer.File, ip: string) {
-    await this.storageService.save(file);
+    const fileData = await this.storageService.save(file);
 
     // Save file metadata to the database
-    const fileMetadata = this.fileMetadataService.saveFileMetadata(file, ip);
+    const fileMetadata = this.fileMetadataService.saveFileMetadata(
+      fileData as Express.Multer.File,
+      ip
+    );
     return fileMetadata;
   }
 

@@ -37,7 +37,6 @@ import { FilesService } from "./services/files.service";
 export class FilesController {
   constructor(
     private readonly filesService: FilesService,
-    private readonly configService: ConfigService,
     private readonly logger: CustomLogger
   ) {
     logger.setContext(FilesController.name);

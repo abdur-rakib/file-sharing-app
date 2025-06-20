@@ -39,7 +39,8 @@ export class GoogleStorageProvider implements IStorageProvider {
     try {
       // Parse the config file
       const configJson = require(configPath) as GoogleStorageConfig;
-      this.bucket = configJson.bucketName;
+
+      this.bucket = this.configService.get<string>("STORAGE_BUCKET");
       this.tmpDir = path.join(process.cwd(), "tmp");
       // Initialize Google Cloud Storage
       this.storage = new Storage({
@@ -59,9 +60,9 @@ export class GoogleStorageProvider implements IStorageProvider {
     this.ensureTempDirectory();
   }
 
-  // /**
-  //  * Ensure temporary directory exists
-  //  */
+  /**
+   * Ensure temporary directory exists
+   */
   private async ensureTempDirectory(): Promise<void> {
     try {
       await fsPromises.mkdir(this.tmpDir, { recursive: true });
@@ -111,10 +112,12 @@ export class GoogleStorageProvider implements IStorageProvider {
             reject(err);
           });
       });
-      // Make the file public (optional, depends on your requirements)
-      await blob.makePublic();
-      // Get the public URL
-      const publicUrl = `https://storage.googleapis.com/${this.bucket}/${filename}`;
+
+      const [url] = await blob.getSignedUrl({
+        action: "read",
+        expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // 7 days
+      });
+      const publicUrl = url;
       // Clean up local file if it exists
       try {
         await fsPromises.unlink(file.path);
@@ -127,7 +130,7 @@ export class GoogleStorageProvider implements IStorageProvider {
       }
       return {
         path: publicUrl,
-        filename: file.originalname,
+        filename: file.filename,
         size: file.size,
         mimetype: file.mimetype,
       };
