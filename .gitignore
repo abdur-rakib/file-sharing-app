@@ -82,3 +82,4 @@ __pypackages__/
 # SonarQube Files
 .scannerwork
 prisma-cloud-scan-result*.json
+docker/config
