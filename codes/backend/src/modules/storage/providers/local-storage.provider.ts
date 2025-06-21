@@ -55,7 +55,7 @@ export class LocalStorageProvider implements IStorageProvider {
       // The file is already saved by multer, just return metadata
       return {
         path: file.path,
-        filename: file.originalname,
+        filename: file.filename,
         size: file.size,
         mimetype: file.mimetype,
       };
