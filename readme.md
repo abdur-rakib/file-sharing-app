@@ -74,19 +74,27 @@ TIMEZONE=Asia/Dhaka
 #### Backend Configuration
 
 ```env
-# File Management
-FOLDER=./uploads
-PROVIDER=local
+# This is an example environment file for the backend service.
+TIMEZONE='Asia/Dhaka'
+
+# File Upload Configuration
+FOLDER='./uploads'
 MAX_UPLOAD_BYTES_PER_IP=524288000
 MAX_DOWNLOAD_BYTES_PER_IP=524288000
+PROVIDER='local' // local, google
+MAX_FILE_SIZE=104857600
 
-# Database
-DB_RELATIVE_PATH=./data/files.db
+# Database Configuration
+DB_RELATIVE_PATH='./data/files.db'
 
-# File Cleanup
+# File Cleanup Configuration
 FILE_CLEANUP_ENABLED=true
 FILE_CLEANUP_INACTIVITY_DAYS=7
-FILE_CLEANUP_SCHEDULE="0 0 * * *"
+FILE_CLEANUP_SCHEDULE="* * * * *"
+
+# Google Cloud Storage Configuration
+CONFIG="config-path"
+STORAGE_BUCKET='bucket-name'
 ```
 
 ### Development
