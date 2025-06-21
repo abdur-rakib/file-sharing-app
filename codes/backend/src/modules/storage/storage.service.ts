@@ -8,19 +8,21 @@ import { File } from "../../common/enums/logging-tag.enum";
 
 @Injectable()
 export class StorageService {
+  private readonly provider: "local" | "google";
   constructor(
     private readonly configService: ConfigService,
     private readonly storageFactory: StorageFactory,
     private readonly logger: CustomLogger
-  ) {}
-  async save(file: Express.Multer.File): Promise<IStorageFile> {
-    // get the file storage provider
-    const provider =
+  ) {
+    this.provider =
       this.configService.get<IFileConfig>("file").fileUplaodServiceProvider;
-    const storageService = this.storageFactory.getService(provider);
+    this.logger.setContext(StorageService.name);
+  }
+  async save(file: Express.Multer.File): Promise<IStorageFile> {
+    const storageService = this.storageFactory.getService(this.provider);
     this.logger.log(
       File.UPLOAD_FILE,
-      `Saving file using provider: ${provider}`
+      `Saving file using provider: ${this.provider}`
     );
 
     // save file to disk storage
@@ -28,10 +30,7 @@ export class StorageService {
   }
 
   async delete(path: string): Promise<void> {
-    // get the file storage provider
-    const provider =
-      this.configService.get<IFileConfig>("file").fileUplaodServiceProvider;
-    const storageService = this.storageFactory.getService(provider);
+    const storageService = this.storageFactory.getService(this.provider);
     // delete file from disk storage
     await storageService.deleteFile(path);
   }
