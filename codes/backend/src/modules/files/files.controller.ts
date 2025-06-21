@@ -12,7 +12,6 @@ import {
   UploadedFile,
   UseInterceptors,
 } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
 import { FileInterceptor } from "@nestjs/platform-express";
 import {
   ApiBody,
@@ -24,12 +23,11 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import { Request, Response } from "express";
-import { promises as fsPromises } from "fs";
-import * as path from "path";
 import { File } from "../../common/enums/logging-tag.enum";
 import { IControllerResult } from "../../common/interfaces/controller-result.interface";
 import { fileUploadToDisk } from "../../common/utils/file-upload";
 import { CustomLogger } from "../../shared/services/custom-logger.service";
+import { StorageService } from "../storage/storage.service";
 import { FilesService } from "./services/files.service";
 
 @Controller({ path: "files", version: "v1" })
@@ -37,6 +35,7 @@ import { FilesService } from "./services/files.service";
 export class FilesController {
   constructor(
     private readonly filesService: FilesService,
+    private readonly storageService: StorageService,
     private readonly logger: CustomLogger
   ) {
     logger.setContext(FilesController.name);
@@ -117,50 +116,36 @@ export class FilesController {
       publicKey,
     });
 
-    let file;
     try {
-      file = await this.filesService.getFileByPublicKey(publicKey);
-    } catch (error) {
-      this.logger.error(
-        File.DOWNLOAD_FILE,
-        `Error retrieving file: ${publicKey}`,
-        error
-      );
-      throw new InternalServerErrorException("Failed to retrieve file");
-    }
+      // Get file metadata from database
+      const fileMetadata =
+        await this.filesService.getFileByPublicKey(publicKey);
 
-    if (!file) {
-      throw new NotFoundException("File not found");
-    }
+      if (!fileMetadata) {
+        throw new NotFoundException("File not found");
+      }
 
-    // Normalize and validate the file path for security
-    const normalizedPath = path.normalize(file.path);
-    const resolvedPath = path.resolve(normalizedPath);
-    try {
-      // Verify file exists using async call
-      await fsPromises.access(resolvedPath);
+      // Get file from storage via StorageService
+      const fileData = await this.storageService.get(fileMetadata.path);
 
-      // Update the IP usage in the database
-      this.filesService.updateIpUsage(req.ip, file.size, false);
+      // Update IP usage statistics
+      this.filesService.updateIpUsage(req.ip, fileMetadata.size, false);
 
       // Set response headers
       res.set({
-        "Content-Type": file.mimetype,
-        "Content-Disposition": `attachment; filename="${encodeURIComponent(file.filename)}"`,
-        "Content-Length": file.size,
+        "Content-Type": fileData.mimetype || "application/octet-stream",
+        "Content-Disposition": `attachment; filename="${encodeURIComponent(fileData.filename)}"`,
+        "Content-Length": fileData.size,
       });
 
-      // Stream the file to the response
-      const { createReadStream } = await import("fs");
-      const fileStream = createReadStream(resolvedPath);
-
-      // Handle stream errors
-      fileStream.on("error", (err) => {
+      // Step 5: Handle stream errors
+      fileData.stream.on("error", (err) => {
         this.logger.error(
           File.DOWNLOAD_FILE,
-          `Error streaming file: ${resolvedPath}`,
+          `Error streaming file: ${fileMetadata.path}`,
           err
         );
+
         // Only send error if headers haven't been sent
         if (!res.headersSent) {
           res.status(500).json({
@@ -175,26 +160,27 @@ export class FilesController {
 
       // Handle request close/abort to clean up resources
       req.on("close", () => {
-        fileStream.destroy();
+        fileData.stream.destroy();
       });
 
-      // Pipe stream to response
-      fileStream.pipe(res);
+      // Stream the file to the response
+      fileData.stream.pipe(res);
     } catch (error) {
-      if (error.code === "ENOENT") {
-        this.logger.log(
-          File.DOWNLOAD_FILE,
-          `File not found on disk: ${resolvedPath}`
-        );
-        throw new NotFoundException("File not found on disk");
-      } else {
-        this.logger.error(
-          File.DOWNLOAD_FILE,
-          `Error accessing file: ${resolvedPath}`,
-          error
-        );
-        throw new InternalServerErrorException("Failed to access file");
+      if (error instanceof NotFoundException) {
+        throw error;
       }
+
+      this.logger.error(
+        File.DOWNLOAD_FILE,
+        `Error retrieving file: ${publicKey}`,
+        error
+      );
+
+      if (error.message === "File not found") {
+        throw new NotFoundException("File not found");
+      }
+
+      throw new InternalServerErrorException("Failed to retrieve file");
     }
   }
 

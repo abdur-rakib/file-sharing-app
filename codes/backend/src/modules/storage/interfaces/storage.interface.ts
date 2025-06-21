@@ -3,24 +3,14 @@ import { ReadStream } from "fs";
 /**
  * File storage metadata object
  */
-export interface IStorageFile {
+export interface IStorageFile extends Partial<Express.Multer.File> {
   filename: string;
   path: string;
   mimetype: string;
   size: number;
   publicKey?: string;
   privateKey?: string;
-}
-
-/**
- * File access response with stream
- */
-export interface IFileResponse {
-  stream: ReadStream;
-  size: number;
-  mimetype: string;
-  filename: string;
-  path: string;
+  stream?: ReadStream;
 }
 
 /**
@@ -40,7 +30,7 @@ export interface IStorageProvider {
    * @param path The file path
    * @returns File stream and metadata
    */
-  getFile(path: string): Promise<IFileResponse>;
+  getFile(path: string): Promise<IStorageFile>;
 
   /**
    * Delete a file from storage

@@ -6,7 +6,6 @@ import * as path from "path";
 import { File } from "../../../common/enums/logging-tag.enum";
 import { CustomLogger } from "../../../shared/services/custom-logger.service";
 import {
-  IFileResponse,
   IStorageFile,
   IStorageProvider,
 } from "../interfaces/storage.interface";
@@ -149,10 +148,11 @@ export class GoogleStorageProvider implements IStorageProvider {
    * @param filePath The file path or URL
    * @returns File stream and metadata
    */
-  async getFile(filePath: string): Promise<IFileResponse> {
+  async getFile(filePath: string): Promise<IStorageFile> {
     try {
       // Extract the filename from the URL or path
-      const filename = path.basename(filePath);
+      const fileNameData = path.basename(filePath);
+      const filename = fileNameData.split("?")[0];
       const file = this.storage.bucket(this.bucket).file(filename);
       // Check if file exists
       const [exists] = await file.exists();
@@ -188,7 +188,7 @@ export class GoogleStorageProvider implements IStorageProvider {
       this.logger.error(
         File.DOWNLOAD_FILE,
         `Failed to retrieve file from Google Cloud: ${filePath}`,
-        err
+        { error: err.message || err }
       );
       throw err;
     }

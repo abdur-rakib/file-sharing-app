@@ -34,4 +34,14 @@ export class StorageService {
     // delete file from disk storage
     await storageService.deleteFile(path);
   }
+  async get(path: string): Promise<IStorageFile> {
+    const storageService = this.storageFactory.getService(this.provider);
+    this.logger.log(
+      File.DOWNLOAD_FILE,
+      `Retrieving file using provider: ${this.provider}`
+    );
+
+    // get file from disk storage
+    return await storageService.getFile(path);
+  }
 }

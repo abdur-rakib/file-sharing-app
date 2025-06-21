@@ -6,7 +6,6 @@ import * as path from "path";
 import { CustomLogger } from "../../../shared/services/custom-logger.service";
 import { File } from "../../../common/enums/logging-tag.enum";
 import {
-  IFileResponse,
   IStorageFile,
   IStorageProvider,
 } from "../interfaces/storage.interface";
@@ -74,7 +73,7 @@ export class LocalStorageProvider implements IStorageProvider {
    * @param filePath The file path
    * @returns File stream and metadata
    */
-  async getFile(filePath: string): Promise<IFileResponse> {
+  async getFile(filePath: string): Promise<IStorageFile> {
     try {
       // Normalize and validate path
       const normalizedPath = path.normalize(filePath);
