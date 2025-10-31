@@ -1,0 +1,35 @@
+name: ✅ Tests
+
+on:
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  test:
+    name: 🧪 Run Tests & Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🏗️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "23"
+          cache: "npm"
+          cache-dependency-path: codes/backend/package-lock.json
+
+      - name: 📦 Install Dependencies
+        working-directory: codes/backend
+        run: npm ci
+
+      - name: 🧪 Run Tests
+        working-directory: codes/backend
+        run: npm test
+
+      - name: 📊 Check Coverage
+        working-directory: codes/backend
+        run: |
+          npm run test:cov
+          node check-coverage.js
