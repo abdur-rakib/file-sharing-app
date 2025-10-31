@@ -1,4 +1,4 @@
-name: ✅ Tests
+name: Tests
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   test:
-    name: 🧪 Run Tests & Coverage
+    name: Run Tests & Coverage
     runs-on: ubuntu-latest
 
     steps:
