@@ -1,10 +1,12 @@
 # File Sharing Application
 
-[![CI/CD Pipeline](https://github.com/abdur-rakib/file-sharing-app/actions/workflows/ci.yml/badge.svg)](https://github.com/abdur-rakib/file-sharing-app/actions/workflows/ci.yml)
+[![CI/CD Pipeline](https://github.com/abdur-rakib/file-sharing-app/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/abdur-rakib/file-sharing-app/actions/workflows/ci.yml)
+[![Branch Protection](https://img.shields.io/badge/Branch%20Protection-Enabled-success.svg)](https://github.com/abdur-rakib/file-sharing-app/settings/branches)
 [![codecov](https://codecov.io/gh/abdur-rakib/file-sharing-app/branch/master/graph/badge.svg)](https://codecov.io/gh/abdur-rakib/file-sharing-app)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D23.0.0-brightgreen.svg)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.1+-blue.svg)](https://www.typescriptlang.org/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
+[![Security](https://img.shields.io/badge/Security-Audited-green.svg)](https://github.com/abdur-rakib/file-sharing-app/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A modern and secure file sharing application built with NestJS backend, featuring Docker containerization, SQLite database, automated file cleanup, and comprehensive CI/CD pipeline.
