@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { IFileConfig } from "src/config/config.interface";
+import { IFileConfig } from "../../config/config.interface";
 import { StorageFactory } from "./storage.factory";
 import { IStorageFile } from "./interfaces/storage.interface";
 import { CustomLogger } from "../../shared/services/custom-logger.service";

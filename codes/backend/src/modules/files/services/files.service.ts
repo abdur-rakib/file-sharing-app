@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { StorageService } from "src/modules/storage/storage.service";
+import { StorageService } from "../../../modules/storage/storage.service";
 import { getToday } from "../../../common/utils/date.utils";
 import { FilesRepository } from "../repositories/files.repository";
 import { IpUsageRepository } from "../repositories/ip-usage.repository";
