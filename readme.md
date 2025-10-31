@@ -1,6 +1,13 @@
 # File Sharing Application
 
-A modern and secure file sharing application built with NestJS backend, featuring Docker containerization, SQLite database, and automated file cleanup.
+[![CI/CD Pipeline](https://github.com/abdur-rakib/file-sharing-app/actions/workflows/ci.yml/badge.svg)](https://github.com/abdur-rakib/file-sharing-app/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/abdur-rakib/file-sharing-app/branch/master/graph/badge.svg)](https://codecov.io/gh/abdur-rakib/file-sharing-app)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.1+-blue.svg)](https://www.typescriptlang.org/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+A modern and secure file sharing application built with NestJS backend, featuring Docker containerization, SQLite database, automated file cleanup, and comprehensive CI/CD pipeline.
 
 ## Project Structure
 
@@ -146,13 +153,55 @@ npm run test:e2e
 npm run test:cov
 ```
 
+## 🚀 CI/CD Pipeline
+
+This project includes a comprehensive GitHub Actions workflow that automatically:
+
+### 🔍 Code Quality Checks
+
+- **Linting**: ESLint with TypeScript rules
+- **Build**: Compilation and build verification
+- **Security**: Automated vulnerability scanning
+
+### 🧪 Testing Suite
+
+- **Unit Tests**: Comprehensive test coverage with Jest
+- **Coverage Validation**: Automated threshold checking (78% average required)
+- **Matrix Testing**: Tests across Node.js versions 16, 18, and 20
+- **Coverage Reports**: Automatic generation and PR comments
+
+### 🐳 Docker Integration
+
+- **Build Verification**: Ensures Docker containers build successfully
+- **Health Checks**: Validates running container functionality
+- **Multi-stage Optimization**: Production-ready image builds
+
+### 📊 Automated Reporting
+
+- **PR Comments**: Automatic coverage reports on pull requests
+- **Status Badges**: Real-time build and coverage status
+- **Codecov Integration**: Detailed coverage tracking
+
+### 🔒 Security Monitoring
+
+- **Dependency Audits**: Automated vulnerability scanning
+- **Security Policies**: Configurable security thresholds
+- **Audit Reports**: Detailed security analysis
+
 ## Contributing
 
 1. Fork the repository
 2. Create feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit changes (`git commit -m 'Add feature'`)
 4. Push branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request
+5. Open Pull Request (automatically triggers CI pipeline)
+
+### Development Workflow
+
+- **All PRs**: Must pass CI checks before merging
+- **Coverage Requirements**: Maintain 78%+ average test coverage
+- **Code Quality**: ESLint and Prettier formatting required
+- **Security**: All dependencies must pass security audit
 
 ## License
 

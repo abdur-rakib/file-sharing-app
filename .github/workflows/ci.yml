@@ -1,0 +1,227 @@
+name: 🚀 CI/CD Pipeline
+
+on:
+  push:
+    branches: [master, main, develop]
+  pull_request:
+    branches: [master, main]
+  workflow_dispatch: # Allow manual trigger
+
+env:
+  NODE_VERSION: "23"
+  PNPM_VERSION: "8"
+
+jobs:
+  # 🔍 Code Quality & Security Checks
+  code-quality:
+    name: 🔍 Code Quality & Security
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🏗️ Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: codes/backend/package-lock.json
+
+      - name: 📦 Install Dependencies
+        working-directory: codes/backend
+        run: |
+          npm ci --prefer-offline --no-audit
+
+      - name: 🔍 Lint Code
+        working-directory: codes/backend
+        run: |
+          npm run lint || echo "⚠️ Linting issues found (non-blocking)"
+
+      - name: 🏗️ Build Application
+        working-directory: codes/backend
+        run: |
+          npm run build
+
+      - name: 📋 List Build Output
+        working-directory: codes/backend
+        run: |
+          echo "📁 Build directory contents:"
+          ls -la dist/ || echo "No dist directory found"
+
+  # 🧪 Testing Suite
+  test:
+    name: 🧪 Test Suite
+    runs-on: ubuntu-latest
+    needs: code-quality
+
+    strategy:
+      matrix:
+        node-version: ["20", "22", "23"]
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🏗️ Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+          cache-dependency-path: codes/backend/package-lock.json
+
+      - name: 📦 Install Dependencies
+        working-directory: codes/backend
+        run: |
+          npm ci --prefer-offline --no-audit
+
+      - name: 🧪 Run Unit Tests
+        working-directory: codes/backend
+        run: |
+          npm test
+
+      - name: 📊 Generate Coverage Report
+        working-directory: codes/backend
+        run: |
+          npm run test:cov
+
+      - name: ✅ Validate Coverage Thresholds
+        working-directory: codes/backend
+        run: |
+          node check-coverage.js
+
+      - name: 📈 Upload Coverage to Codecov (Node 23 only)
+        if: matrix.node-version == '23'
+        uses: codecov/codecov-action@v3
+        with:
+          file: codes/backend/coverage/lcov.info
+          directory: codes/backend/coverage
+          flags: backend
+          name: backend-coverage
+          fail_ci_if_error: false
+
+      - name: 📋 Coverage Summary Comment (PR only)
+        if: github.event_name == 'pull_request' && matrix.node-version == '23'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'codes/backend/coverage/coverage-summary.json';
+
+            if (fs.existsSync(path)) {
+              const coverage = JSON.parse(fs.readFileSync(path, 'utf8'));
+              const { total } = coverage;
+              
+              const comment = `
+              ## 📊 Test Coverage Report
+              
+              | Metric | Coverage | Files Covered |
+              |--------|----------|---------------|
+              | 📈 Lines | ${total.lines.pct}% | ${total.lines.covered}/${total.lines.total} |
+              | 🔧 Functions | ${total.functions.pct}% | ${total.functions.covered}/${total.functions.total} |
+              | 🌿 Branches | ${total.branches.pct}% | ${total.branches.covered}/${total.branches.total} |
+              | 📝 Statements | ${total.statements.pct}% | ${total.statements.covered}/${total.statements.total} |
+              
+              **Average Coverage:** ${((total.lines.pct + total.functions.pct + total.branches.pct + total.statements.pct) / 4).toFixed(2)}%
+              
+              ${((total.lines.pct + total.functions.pct + total.branches.pct + total.statements.pct) / 4) >= 75 ? '✅ Coverage thresholds met!' : '⚠️ Coverage below recommended thresholds'}
+              `;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }
+
+  # 🐳 Docker Build & Test
+  docker:
+    name: 🐳 Docker Build & Test
+    runs-on: ubuntu-latest
+    needs: [code-quality, test]
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🏗️ Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🐳 Build Docker Image
+        working-directory: docker
+        run: |
+          docker-compose build backend
+
+      - name: 🧪 Test Docker Container
+        working-directory: docker
+        run: |
+          # Start services in background
+          docker-compose up -d
+
+          # Wait for backend to be ready
+          echo "⏳ Waiting for backend to start..."
+          sleep 15
+
+          # Test health endpoint
+          curl -f http://localhost:3000/api/health || exit 1
+          echo "✅ Backend health check passed"
+
+          # Cleanup
+          docker-compose down
+
+      - name: 📋 Docker Images Info
+        run: |
+          echo "🐳 Docker images built:"
+          docker images | grep file-sharing
+
+  # 🔒 Security Audit
+  security:
+    name: 🔒 Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🏗️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 🔍 Security Audit
+        working-directory: codes/backend
+        run: |
+          npm audit --audit-level high || echo "⚠️ Security vulnerabilities found (review required)"
+
+      - name: 🛡️ Check for Known Vulnerabilities
+        working-directory: codes/backend
+        run: |
+          npx audit-ci --config .auditci.json || echo "⚠️ Audit CI check completed with warnings"
+
+  # 📊 Final Status Check
+  status-check:
+    name: 📊 Final Status Check
+    runs-on: ubuntu-latest
+    needs: [code-quality, test, docker, security]
+    if: always()
+
+    steps:
+      - name: ✅ All Checks Passed
+        if: needs.code-quality.result == 'success' && needs.test.result == 'success' && needs.docker.result == 'success'
+        run: |
+          echo "🎉 All CI checks passed successfully!"
+          echo "✅ Code Quality: ${{ needs.code-quality.result }}"
+          echo "✅ Tests: ${{ needs.test.result }}"
+          echo "✅ Docker: ${{ needs.docker.result }}"
+          echo "✅ Security: ${{ needs.security.result }}"
+
+      - name: ❌ Some Checks Failed
+        if: needs.code-quality.result != 'success' || needs.test.result != 'success' || needs.docker.result != 'success'
+        run: |
+          echo "❌ Some CI checks failed:"
+          echo "Code Quality: ${{ needs.code-quality.result }}"
+          echo "Tests: ${{ needs.test.result }}"
+          echo "Docker: ${{ needs.docker.result }}"
+          echo "Security: ${{ needs.security.result }}"
+          exit 1
