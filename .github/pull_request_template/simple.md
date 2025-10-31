@@ -8,7 +8,7 @@
 
 - [ ] 🐛 Bug fix
 - [ ] ✨ New feature
-- [ ] Documentation update
+- [ ] 📚 Documentation update
 - [ ] 🔧 Code refactoring
 
 ### ✅ Testing Checklist
@@ -25,4 +25,4 @@
 
 **✅ CI Status:** Tests will run automatically when PR is created
 
-**�️ Merge Protection:** Merge button will be disabled until tests pass
+**🛡️ Merge Protection:** Merge button will be disabled until tests pass
