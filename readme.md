@@ -196,7 +196,7 @@ This project includes a comprehensive GitHub Actions workflow that automatically
 2. Create feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit changes (`git commit -m 'Add feature'`)
 4. Push branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request (automatically triggers CI pipeline)
+5. Open Pull Request (automatically triggers CI pipeline )
 
 ### Development Workflow
 
