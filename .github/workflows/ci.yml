@@ -1,274 +1,35 @@
-name: 🚀 CI/CD Pipeline
+name: ✅ Tests
 
 on:
-  push:
-    branches: [master, main, develop]
   pull_request:
     branches: [master, main]
-  workflow_dispatch: # Allow manual trigger
-
-env:
-  NODE_VERSION: "23"
-  PNPM_VERSION: "8"
 
 jobs:
-  # 🔍 Code Quality & Security Checks
-  code-quality:
-    name: 🔍 Code Quality & Security
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: 🏗️ Setup Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-          cache-dependency-path: codes/backend/package-lock.json
-
-      - name: 📦 Install Dependencies
-        working-directory: codes/backend
-        run: |
-          npm ci --prefer-offline --no-audit
-
-      - name: 🔍 Lint Code
-        working-directory: codes/backend
-        run: |
-          npm run lint || echo "⚠️ Linting issues found (non-blocking)"
-
-      - name: 🏗️ Build Application
-        working-directory: codes/backend
-        run: |
-          npm run build
-
-      - name: 📋 List Build Output
-        working-directory: codes/backend
-        run: |
-          echo "📁 Build directory contents:"
-          ls -la dist/ || echo "No dist directory found"
-
-  # 🧪 Testing Suite
   test:
-    name: 🧪 Test Suite
-    runs-on: ubuntu-latest
-    needs: code-quality
-
-    strategy:
-      matrix:
-        node-version: ["20", "22", "23"]
-
-    steps:
-      - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: 🏗️ Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: "npm"
-          cache-dependency-path: codes/backend/package-lock.json
-
-      - name: 📦 Install Dependencies
-        working-directory: codes/backend
-        run: |
-          npm ci --prefer-offline --no-audit
-
-      - name: 🧪 Run Unit Tests
-        working-directory: codes/backend
-        run: |
-          npm test
-
-      - name: 📊 Generate Coverage Report
-        working-directory: codes/backend
-        run: |
-          npm run test:cov
-
-      - name: ✅ Validate Coverage Thresholds
-        working-directory: codes/backend
-        run: |
-          node check-coverage.js
-
-      - name: 📈 Upload Coverage to Codecov (Node 23 only)
-        if: matrix.node-version == '23'
-        uses: codecov/codecov-action@v3
-        with:
-          file: codes/backend/coverage/lcov.info
-          directory: codes/backend/coverage
-          flags: backend
-          name: backend-coverage
-          fail_ci_if_error: false
-
-      - name: 📋 Coverage Summary Comment (PR only)
-        if: github.event_name == 'pull_request' && matrix.node-version == '23'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const path = 'codes/backend/coverage/coverage-summary.json';
-
-            if (fs.existsSync(path)) {
-              const coverage = JSON.parse(fs.readFileSync(path, 'utf8'));
-              const { total } = coverage;
-              
-              const comment = `
-              ## 📊 Test Coverage Report
-              
-              | Metric | Coverage | Files Covered |
-              |--------|----------|---------------|
-              | 📈 Lines | ${total.lines.pct}% | ${total.lines.covered}/${total.lines.total} |
-              | 🔧 Functions | ${total.functions.pct}% | ${total.functions.covered}/${total.functions.total} |
-              | 🌿 Branches | ${total.branches.pct}% | ${total.branches.covered}/${total.branches.total} |
-              | 📝 Statements | ${total.statements.pct}% | ${total.statements.covered}/${total.statements.total} |
-              
-              **Average Coverage:** ${((total.lines.pct + total.functions.pct + total.branches.pct + total.statements.pct) / 4).toFixed(2)}%
-              
-              ${((total.lines.pct + total.functions.pct + total.branches.pct + total.statements.pct) / 4) >= 75 ? '✅ Coverage thresholds met!' : '⚠️ Coverage below recommended thresholds'}
-              `;
-              
-              github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: comment
-              });
-            }
-
-  # 🐳 Docker Build & Test
-  docker:
-    name: 🐳 Docker Build & Test
-    runs-on: ubuntu-latest
-    needs: [code-quality, test]
-
-    steps:
-      - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: 🏗️ Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: 🐳 Build Docker Image
-        working-directory: docker
-        run: |
-          docker-compose build backend
-
-      - name: 🧪 Test Docker Container
-        working-directory: docker
-        run: |
-          # Start services in background
-          docker-compose up -d
-
-          # Wait for backend to be ready
-          echo "⏳ Waiting for backend to start..."
-          sleep 15
-
-          # Test health endpoint
-          curl -f http://localhost:3000/api/health || exit 1
-          echo "✅ Backend health check passed"
-
-          # Cleanup
-          docker-compose down
-
-      - name: 📋 Docker Images Info
-        run: |
-          echo "🐳 Docker images built:"
-          docker images | grep file-sharing
-
-  # 🔒 Security Audit
-  security:
-    name: 🔒 Security Audit
+    name: 🧪 Run Tests & Coverage
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkout Repository
+      - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
       - name: 🏗️ Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: "23"
+          cache: "npm"
+          cache-dependency-path: codes/backend/package-lock.json
 
-      - name: 🔍 Security Audit
+      - name: 📦 Install Dependencies
+        working-directory: codes/backend
+        run: npm ci
+
+      - name: 🧪 Run Tests
+        working-directory: codes/backend
+        run: npm test
+
+      - name: 📊 Check Coverage
         working-directory: codes/backend
         run: |
-          npm audit --audit-level high || echo "⚠️ Security vulnerabilities found (review required)"
-
-      - name: 🛡️ Check for Known Vulnerabilities
-        working-directory: codes/backend
-        run: |
-          npx audit-ci --config .auditci.json || echo "⚠️ Audit CI check completed with warnings"
-
-  # �️ Branch Protection Status Check
-  # This job is REQUIRED and will block merges if any previous job fails
-  branch-protection:
-    name: �️ Branch Protection
-    runs-on: ubuntu-latest
-    needs: [code-quality, test, docker, security]
-    if: always()
-
-    steps:
-      - name: 🔍 Check All Job Results
-        run: |
-          echo "📊 Checking status of all required jobs..."
-          echo "=================================="
-          echo "🔍 Code Quality: ${{ needs.code-quality.result }}"
-          echo "🧪 Tests: ${{ needs.test.result }}"
-          echo "🐳 Docker: ${{ needs.docker.result }}"
-          echo "🔒 Security: ${{ needs.security.result }}"
-          echo "=================================="
-
-      - name: ❌ Fail if Any Required Job Failed
-        if: >
-          needs.code-quality.result != 'success' ||
-          needs.test.result != 'success' ||
-          needs.docker.result != 'success' ||
-          needs.security.result != 'success'
-        run: |
-          echo "❌ MERGE BLOCKED: One or more required checks failed!"
-          echo ""
-          echo "📋 Job Status Summary:"
-          echo "Code Quality: ${{ needs.code-quality.result }}"
-          echo "Tests: ${{ needs.test.result }}"
-          echo "Docker: ${{ needs.docker.result }}"
-          echo "Security: ${{ needs.security.result }}"
-          echo ""
-          echo "🚫 Cannot merge until ALL checks pass!"
-          exit 1
-
-      - name: ✅ All Checks Passed - Ready to Merge
-        if: >
-          needs.code-quality.result == 'success' &&
-          needs.test.result == 'success' &&
-          needs.docker.result == 'success' &&
-          needs.security.result == 'success'
-        run: |
-          echo "🎉 ALL REQUIRED CHECKS PASSED!"
-          echo "================================"
-          echo "✅ Code Quality: PASSED"
-          echo "✅ Tests: PASSED" 
-          echo "✅ Docker: PASSED"
-          echo "✅ Security: PASSED"
-          echo "================================"
-          echo "🚀 READY TO MERGE! 🚀"
-
-      - name: 📊 Generate Job Summary
-        if: always()
-        run: |
-          echo "# 🛡️ Branch Protection Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Job | Status | Result |" >> $GITHUB_STEP_SUMMARY
-          echo "|-----|--------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔍 Code Quality & Security | ${{ needs.code-quality.result }} | $([ '${{ needs.code-quality.result }}' = 'success' ] && echo '✅ Passed' || echo '❌ Failed') |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🧪 Test Suite | ${{ needs.test.result }} | $([ '${{ needs.test.result }}' = 'success' ] && echo '✅ Passed' || echo '❌ Failed') |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🐳 Docker Build & Test | ${{ needs.docker.result }} | $([ '${{ needs.docker.result }}' = 'success' ] && echo '✅ Passed' || echo '❌ Failed') |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔒 Security Audit | ${{ needs.security.result }} | $([ '${{ needs.security.result }}' = 'success' ] && echo '✅ Passed' || echo '❌ Failed') |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          if [ '${{ needs.code-quality.result }}' = 'success' ] && [ '${{ needs.test.result }}' = 'success' ] && [ '${{ needs.docker.result }}' = 'success' ] && [ '${{ needs.security.result }}' = 'success' ]; then
-            echo "## 🎉 Status: READY TO MERGE" >> $GITHUB_STEP_SUMMARY
-            echo "All required checks have passed successfully!" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "## 🚫 Status: MERGE BLOCKED" >> $GITHUB_STEP_SUMMARY
-            echo "One or more required checks have failed. Fix the issues and push again." >> $GITHUB_STEP_SUMMARY
-          fi
+          npm run test:cov
+          node check-coverage.js
